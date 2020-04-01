@@ -1,0 +1,5 @@
+resources/tests/*.txt
+resources/tests/test.cpp
+resources/tests/test
+resources/tests/queries/query
+resources/tests/queries/test-queries.txt
