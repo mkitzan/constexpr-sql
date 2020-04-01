@@ -1,7 +1,7 @@
 import os
 
 def include(header, incs, root, included):
-	file = open(root, "r")
+	file = open("../include/" + root, "r")
 
 	for line in file:
 		if line == "#pragma once\n" or line == "\n":
@@ -27,9 +27,9 @@ def main():
 	included, incs = include(header, [], "sql/schema.hpp", [])
 	included, incs = include(header, incs, "sql/query.hpp", included)
 	header.close()
-	header = open("../single-header/sql.hpp", "w")
+	header = open("sql.hpp", "w")
 
-	for line in set(incs):
+	for line in sorted(set(incs)):
 		header.write(line)
 	header.write("\n")
 

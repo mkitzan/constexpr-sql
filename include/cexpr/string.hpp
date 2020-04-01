@@ -23,37 +23,37 @@ namespace cexpr
 			}
 		}
 
-			constexpr string(cexpr::string<CharT, N> const& s) : string{}
+		constexpr string(cexpr::string<CharT, N> const& s) : string{}
+		{
+			for (; s[size_]; ++size_)
 			{
-				for (; s[size_]; ++size_)
+				string_[size_] = s[size_];
+			}
+		}
+
+		constexpr string(std::basic_string_view<CharT> const& s) : string{}
+		{
+			for (; size_ < s.length(); ++size_)
+			{
+				string_[size_] = s[size_];
+			}
+		}
+
+		constexpr void fill(const CharT* begin, const CharT* end)
+		{
+			fill_from(begin, end, begin());
+		}
+
+		constexpr void fill_from(const CharT* begin, const CharT* end, CharT* start)
+		{
+			if (end - begin < N)
+			{
+				for (auto curr{ start }; begin != end; ++begin, ++curr)
 				{
-					string_[size_] = s[size_];
+					*curr = *begin;
 				}
 			}
-
-			constexpr string(std::basic_string_view<CharT> const& s) : string{}
-			{
-				for (; size_ < s.length(); ++size_)
-				{
-					string_[size_] = s[size_];
-				}
-			}
-
-			constexpr void fill(const CharT* begin, const CharT* end)
-			{
-				fill_from(begin, end, begin());
-			}
-
-			constexpr void fill_from(const CharT* begin, const CharT* end, CharT* start)
-			{
-				if (end - begin < N)
-				{
-					for (auto curr{ start }; begin != end; ++begin, ++curr)
-					{
-						*curr = *begin;
-					}
-				}
-			}
+		}
 
 		constexpr std::size_t capacity() const noexcept
 		{ 
