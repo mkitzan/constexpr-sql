@@ -23,20 +23,20 @@ def include(header, incs, root, included):
 	return included, incs
 
 def main():
-	header = open("temp.hpp", "w")
+	header = open("temp", "w")
 	included, incs = include(header, [], "sql/schema.hpp", [])
 	included, incs = include(header, incs, "sql/query.hpp", included)
 	header.close()
-	header = open("../sql.hpp", "w")
+	header = open("../single-header/sql.hpp", "w")
 
 	for line in set(incs):
 		header.write(line)
 	header.write("\n")
 
-	for line in open("temp.hpp"):
+	for line in open("temp"):
 		header.write(line)
 
-	os.remove("temp.hpp")
+	os.remove("temp")
 
 if __name__ == "__main__":
 	main()
