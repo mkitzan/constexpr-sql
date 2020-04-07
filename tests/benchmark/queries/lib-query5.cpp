@@ -1,10 +1,10 @@
 #include <iostream>
-#include "../data.hpp"
+#include "../../data.hpp"
 
 using query =
 	sql::query<
 		"SELECT story, genre AS type, year AS published, title, collection, pages "
-		"FROM stories CROSS join collected "
+		"FROM T0 CROSS join T1 "
 		"WHERE genre != \"science fiction\" OR year >= 1970 OR NOT pages < 300",
 		stories,
 		collected
@@ -12,8 +12,8 @@ using query =
 
 int main()
 {
-	stories s{ sql::load<stories, "\t">(bench_folder + stories_data) };
-	collected c{ sql::load<authored, "\t">(bench_folder + collected_data) };
+	stories s{ sql::load<stories, '\t'>(bench_folder + stories_data) };
+	collected c{ sql::load<authored, '\t'>(bench_folder + collected_data) };
 
 	for (std::size_t i{}; i < iters; ++i)
 	{

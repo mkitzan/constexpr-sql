@@ -1,17 +1,17 @@
 #include <iostream>
-#include "../data.hpp"
+#include "../../data.hpp"
 
 using query =
 	sql::query<
 		"SELECT title, genre AS type, year AS published "
-		"FROM stories "
+		"FROM T0 "
 		"WHERE NOT genre <> \"science fiction\" AND NOT year <= 1970",
 		stories
 	>;
 
 int main()
 {
-	stories s{ sql::load<stories, "\t">(bench_folder + stories_data) };
+	stories s{ sql::load<stories, '\t'>(bench_folder + stories_data) };
 
 	for (std::size_t i{}; i < iters; ++i)
 	{

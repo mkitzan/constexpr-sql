@@ -5,24 +5,23 @@
 #include <vector>
 #include <unordered_map>
 
-#include "../data.hpp"
+#include "../../data.hpp"
 
 using stories_row = std::tuple<std::string, std::string, int>;
 using stories_type = std::vector<stories_row>;
 
 template <char Delim>
-Schema tuple_load(std::string const& data)
+stories_type tuple_load(std::string const& data)
 {
-	using std::get;
 	auto file{ std::fstream(data) };
 	stories_type table{};
 
 	while (file)
 	{
 		stories_row row{};
-		std::getline(file, get<0>(row), Delim);
-		std::getline(file, get<1>(row), Delim);
-		file >> get<2>(row);
+		std::getline(file, std::get<0>(row), Delim);
+		std::getline(file, std::get<1>(row), Delim);
+		file >> std::get<2>(row);
 		
 		table.push_back(std::move(row));
 
@@ -40,11 +39,9 @@ stories_type query(stories_type const& s)
 	using std::get;
 	stories_type output{};
 
-	for (auto const& row : b)
+	for (auto const& row : s)
 	{
-		auto it{ cache.find(get<0>(row)) };
-
-		if (it != cache.end() && !(get<1>(get<1>(*it)) != "science fiction") && !(get<2>(get<1>(get<1>(*it)) <= 1970))
+		if (!(get<1>(row) != "science fiction") && !(get<2>(row) <= 1970))
 		{
 			output.push_back(row);
 		}

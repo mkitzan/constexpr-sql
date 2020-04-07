@@ -1,10 +1,10 @@
 #include <iostream>
-#include "../data.hpp"
+#include "../../data.hpp"
 
 using query =
 	sql::query<
 		"SELECT genre AS type, name "
-		"FROM books NATURAL JOIN authored "
+		"FROM T0 NATURAL JOIN T1 "
 		"WHERE NOT genre = \"science fiction\" AND name != \"Harlan Elison\"",
 		books,
 		authored
@@ -12,8 +12,8 @@ using query =
 
 int main()
 {
-	books b{ sql::load<books, "\t">(bench_folder + books_data) };
-	authored a{ sql::load<authored, "\t">(bench_folder + authored_data) };
+	books b{ sql::load<books, '\t'>(bench_folder + books_data) };
+	authored a{ sql::load<authored, '\t'>(bench_folder + authored_data) };
 
 	for (std::size_t i{}; i < iters; ++i)
 	{
