@@ -12,8 +12,8 @@ using query =
 
 int main()
 {
-	books b{ sql::load<books, '\t'>(bench_folder + books_data) };
-	authored a{ sql::load<authored, '\t'>(bench_folder + authored_data) };
+	books b{ sql::load<books, '\t'>(perf_folder + books_data) };
+	authored a{ sql::load<authored, '\t'>(perf_folder + authored_data) };
 
 	for (std::size_t i{}; i < iters; ++i)
 	{

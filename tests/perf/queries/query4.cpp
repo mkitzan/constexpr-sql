@@ -33,7 +33,7 @@ int main()
 	books_type b{ books_load<'\t'>() };
 	authored_type a{ authored_load<'\t'>() };
 
-	for (std::size_t i{}; i < iters / 128; ++i)
+	for (std::size_t i{}; i < iters / offset; ++i)
 	{
 		for (auto data{ query(b, a) }; auto const& [b, g, y] : data)
 		{

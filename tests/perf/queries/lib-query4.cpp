@@ -12,10 +12,10 @@ using query =
 
 int main()
 {
-	books b{ sql::load<books, '\t'>(bench_folder + books_data) };
-	authored a{ sql::load<authored, '\t'>(bench_folder + authored_data) };
+	books b{ sql::load<books, '\t'>(perf_folder + books_data) };
+	authored a{ sql::load<authored, '\t'>(perf_folder + authored_data) };
 
-	for (std::size_t i{}; i < iters / 128; ++i)
+	for (std::size_t i{}; i < iters / offset; ++i)
 	{
 		for (query q{ b, a }; auto const& [b, g, y] : q)
 		{

@@ -12,8 +12,8 @@ using query =
 
 int main()
 {
-	stories s{ sql::load<stories, '\t'>(bench_folder + stories_data) };
-	authored a{ sql::load<authored, '\t'>(bench_folder + authored_data) };
+	stories s{ sql::load<stories, '\t'>(perf_folder + stories_data) };
+	authored a{ sql::load<authored, '\t'>(perf_folder + authored_data) };
 
 	for (std::size_t i{}; i < iters; ++i)
 	{

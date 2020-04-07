@@ -33,7 +33,7 @@ int main()
 	stories_type s{ stories_load<'\t'>() };
 	collected_type c{ collected_load<'\t'>() };
 
-	for (std::size_t i{}; i < iters / 128; ++i)
+	for (std::size_t i{}; i < iters / offset; ++i)
 	{
 		for (auto data{ query(s, c) }; auto const& [st, g, y, t, co, p] : data)
 		{

@@ -12,10 +12,10 @@ using query =
 
 int main()
 {
-	stories s{ sql::load<stories, '\t'>(bench_folder + stories_data) };
-	collected c{ sql::load<collected, '\t'>(bench_folder + collected_data) };
+	stories s{ sql::load<stories, '\t'>(perf_folder + stories_data) };
+	collected c{ sql::load<collected, '\t'>(perf_folder + collected_data) };
 
-	for (std::size_t i{}; i < iters / 128; ++i)
+	for (std::size_t i{}; i < iters / offset; ++i)
 	{
 		for (query q{ s, c }; auto const& [s, g, y, t, c, p] : q)
 		{

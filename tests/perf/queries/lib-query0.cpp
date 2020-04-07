@@ -11,7 +11,7 @@ using query =
 
 int main()
 {
-	stories s{ sql::load<stories, '\t'>(bench_folder + stories_data) };
+	stories s{ sql::load<stories, '\t'>(perf_folder + stories_data) };
 
 	for (std::size_t i{}; i < iters; ++i)
 	{

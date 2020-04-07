@@ -46,7 +46,7 @@ using collected =
 	>;
 
 const std::string data_folder{ "./data/" };
-const std::string bench_folder{ "../data/" };
+const std::string perf_folder{ "../data/" };
 const std::string books_data{ "books-table.tsv" };
 const std::string stories_data{ "stories-table.tsv" };
 const std::string authored_data{ "authored-table.tsv" };
@@ -61,12 +61,13 @@ using authored_type = std::vector<authored_row>;
 using collected_row = std::tuple<std::string, std::string, int>;
 using collected_type = std::vector<collected_row>;
 
-constexpr std::size_t iters{ 16384 };
+constexpr std::size_t iters{ 65536 };
+constexpr std::size_t offset{ 512 };
 
 template <char Delim>
 books_type books_load()
 {
-	auto file{ std::fstream(bench_folder + books_data) };
+	auto file{ std::fstream(perf_folder + books_data) };
 	books_type table{};
 
 	while (file)
@@ -91,7 +92,7 @@ books_type books_load()
 template <char Delim>
 stories_type stories_load()
 {
-	auto file{ std::fstream(bench_folder + stories_data) };
+	auto file{ std::fstream(perf_folder + stories_data) };
 	stories_type table{};
 
 	while (file)
@@ -115,7 +116,7 @@ stories_type stories_load()
 template <char Delim>
 authored_type authored_load()
 {
-	auto file{ std::fstream(bench_folder + authored_data) };
+	auto file{ std::fstream(perf_folder + authored_data) };
 	authored_type table{};
 
 	while (file)
@@ -138,7 +139,7 @@ authored_type authored_load()
 template <char Delim>
 collected_type collected_load()
 {
-	auto file{ std::fstream(bench_folder + collected_data) };
+	auto file{ std::fstream(perf_folder + collected_data) };
 	collected_type table{};
 
 	while (file)
