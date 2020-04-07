@@ -52,4 +52,109 @@ const std::string stories_data{ "stories-table.tsv" };
 const std::string authored_data{ "authored-table.tsv" };
 const std::string collected_data{ "collected-table.tsv" };
 
-constexpr std::size_t iters{ 1024 };
+using books_row = std::tuple<std::string, std::string, int, int>;
+using books_type = std::vector<books_row>;
+using stories_row = std::tuple<std::string, std::string, int>;
+using stories_type = std::vector<stories_row>;
+using authored_row = std::tuple<std::string, std::string>;
+using authored_type = std::vector<authored_row>; 
+using collected_row = std::tuple<std::string, std::string, int>;
+using collected_type = std::vector<collected_row>;
+
+constexpr std::size_t iters{ 8192 };
+
+template <char Delim>
+books_type books_load()
+{
+	auto file{ std::fstream(bench_folder + books_data) };
+	books_type table{};
+
+	while (file)
+	{
+		books_row row{};
+		std::getline(file, std::get<0>(row), Delim);
+		std::getline(file, std::get<1>(row), Delim);
+		file >> std::get<2>(row);
+		file >> std::get<3>(row);
+		
+		table.push_back(std::move(row));
+
+		if (file.get() != '\n')
+		{
+			file.unget();
+		}
+	}
+
+	return table;	
+}
+
+template <char Delim>
+stories_type stories_load()
+{
+	auto file{ std::fstream(bench_folder + stories_data) };
+	stories_type table{};
+
+	while (file)
+	{
+		stories_row row{};
+		std::getline(file, std::get<0>(row), Delim);
+		std::getline(file, std::get<1>(row), Delim);
+		file >> std::get<2>(row);
+		
+		table.push_back(std::move(row));
+
+		if (file.get() != '\n')
+		{
+			file.unget();
+		}
+	}
+
+	return table;	
+}
+
+template <char Delim>
+authored_type authored_load()
+{
+	auto file{ std::fstream(bench_folder + authored_data) };
+	authored_type table{};
+
+	while (file)
+	{
+		authored_row row{};
+		std::getline(file, std::get<0>(row), Delim);
+		std::getline(file, std::get<1>(row), Delim);
+		
+		table.push_back(std::move(row));
+
+		if (file.get() != '\n')
+		{
+			file.unget();
+		}
+	}
+
+	return table;	
+}
+
+template <char Delim>
+collected_type collected_load()
+{
+	auto file{ std::fstream(bench_folder + collected_data) };
+	collected_type table{};
+
+	while (file)
+	{
+		collected_row row{};
+		std::getline(file, std::get<0>(row), Delim);
+		std::getline(file, std::get<1>(row), Delim);
+		file >> std::get<2>(row);
+		
+		table.push_back(std::move(row));
+
+		if (file.get() != '\n')
+		{
+			file.unget();
+		}
+	}
+
+	return table;	
+}

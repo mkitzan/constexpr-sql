@@ -28,7 +28,7 @@ integral_comp = [">", "<", ">=", "<="]
 bool_op = ["or", "and"]
 negate_op = ["", "not "]
 where_data = {
-	"name": ["Harlan Elison"],
+	"name": ["Harlan Ellison"],
 	"year": [1970],
 	"pages": [300],
 	"genre": ["science fiction"]

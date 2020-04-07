@@ -2,4 +2,3 @@ tests/*.txt
 tests/test.cpp
 tests/test
 tests/queries/*
-tests/benchmark/data/*
