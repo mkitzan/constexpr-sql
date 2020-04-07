@@ -61,7 +61,7 @@ using authored_type = std::vector<authored_row>;
 using collected_row = std::tuple<std::string, std::string, int>;
 using collected_type = std::vector<collected_row>;
 
-constexpr std::size_t iters{ 8192 };
+constexpr std::size_t iters{ 16384 };
 
 template <char Delim>
 books_type books_load()

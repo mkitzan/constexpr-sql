@@ -7,7 +7,7 @@ def exe(file, q):
 		os.system("g++ -std=c++2a -DCROSS -O3 -I../../single-header -o test queries/" + file)
 	else:
 		os.system("g++ -std=c++2a -O3 -I../../single-header -o test queries/" + file)
-	os.system("/usr/bin/time -f \"%e real\n%U user\n%s sys\" -o data/" + file[:-4] + " ./test > /dev/null")
+	os.system("/usr/bin/time -f \"%U user\" -o data/" + file[:-4] + " ./test > /dev/null")
 	os.remove("test")
 
 def main():
