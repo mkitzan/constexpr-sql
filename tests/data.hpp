@@ -46,7 +46,10 @@ using collected =
 	>;
 
 const std::string data_folder{ "./data/" };
+const std::string bench_folder{ "../data/" };
 const std::string books_data{ "books-table.tsv" };
 const std::string stories_data{ "stories-table.tsv" };
 const std::string authored_data{ "authored-table.tsv" };
 const std::string collected_data{ "collected-table.tsv" };
+
+constexpr std::size_t iters{ 1024 };
