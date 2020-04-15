@@ -195,6 +195,10 @@ namespace sql
 		row(column::type const& val, ColTs const&... vals) : value_{ val }, next_{ vals... }
 		{}
 
+		template <typename... ColTs>
+		row(column::type&& val, ColTs&&... vals) : value_{ std::forward<column::type>(val) }, next_{ std::forward<ColTs>(vals)... }
+		{}
+
 		inline constexpr next const& tail() const
 		{
 			return next_;
@@ -363,7 +367,7 @@ namespace sql
 		template <typename T, typename... Ts>
 		schema(std::vector<T>&& col, Ts&&... cols) : schema{}
 		{
-			insert(std::forward<T>(col), cols...);
+			insert(std::forward<T>(col), std::forward<Ts>(cols)...);
 		}
 
 		template <typename... Ts>
@@ -392,7 +396,7 @@ namespace sql
 		{
 			for (std::size_t i{}; i < col.size(); ++i)
 			{
-				emplace(std::forward<T>(col[i]), cols[i]...);
+				emplace(std::forward<T>(col[i]),std::forward<Ts>(cols[i])...);
 			}
 		}
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "cexpr/string.hpp"
@@ -25,6 +26,10 @@ namespace sql
 
 		template <typename... ColTs>
 		row(column::type const& val, ColTs const&... vals) : value_{ val }, next_{ vals... }
+		{}
+
+		template <typename... ColTs>
+		row(column::type&& val, ColTs&&... vals) : value_{ std::forward<column::type>(val) }, next_{ std::forward<ColTs>(vals)... }
 		{}
 
 		inline constexpr next const& tail() const

@@ -37,7 +37,7 @@ namespace sql
 		template <typename T, typename... Ts>
 		schema(std::vector<T>&& col, Ts&&... cols) : schema{}
 		{
-			insert(std::forward<T>(col), cols...);
+			insert(std::forward<T>(col), std::forward<Ts>(cols)...);
 		}
 
 		template <typename... Ts>
@@ -66,7 +66,7 @@ namespace sql
 		{
 			for (std::size_t i{}; i < col.size(); ++i)
 			{
-				emplace(std::forward<T>(col[i]), cols[i]...);
+				emplace(std::forward<T>(col[i]),std::forward<Ts>(cols[i])...);
 			}
 		}
 
