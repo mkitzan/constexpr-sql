@@ -190,20 +190,25 @@ namespace sql
 			{
 				constexpr auto expr{ parse_or<Pos + 1, Row>() };
 
-				return TreeNode<expr.pos + 1, typename decltype(expr)::node>{};
+				using node = typename decltype(expr)::node;
+
+				return TreeNode<expr.pos + 1, node>{};
 			}
 			else if constexpr (tokens_[Pos] == "\'" || tokens_[Pos] == "\"")
 			{
 				constexpr cexpr::string<char, tokens_[Pos + 1].length() + 1> name{ tokens_[Pos + 1] };
 
-				return TreeNode<Pos + 3, sql::constant<value<decltype(name)>{ name }, Row>>{};
+				using str = decltype(name);
+
+				return TreeNode<Pos + 3, sql::constant<value<str>{ name }, Row>>{};
 			}
 			else if constexpr (isdigit(tokens_[Pos][0]))
 			{
 				constexpr cexpr::string<char, tokens_[Pos].length() + 1> name{ tokens_[Pos] };
-				constexpr auto val{ isintegral(tokens_[Pos]) ? std::int64_t{} : double{} };
+				
+				using val = std::remove_const_t<decltype(isintegral(tokens_[Pos]) ? std::int64_t{} : double{})>;
 
-				return TreeNode<Pos + 1, sql::constant<sql::convert<std::remove_const_t<decltype(val)>>(name), Row>>{};
+				return TreeNode<Pos + 1, sql::constant<sql::convert<val>(name), Row>>{};
 			}
 			else
 			{
@@ -225,9 +230,11 @@ namespace sql
 			{
 				constexpr auto right{ parse_terms<Left::pos + 1, Row>() };
 				constexpr cexpr::string<char, tokens_[Left::pos].length() + 1> name{ tokens_[Left::pos] };
-				constexpr auto node{ sql::operation<name, Row, typename Left::node, typename decltype(right)::node>{} };
 
-				return TreeNode<right.pos, std::remove_cvref_t<decltype(node)>>{};
+				using node = typename decltype(right)::node;
+				using next = std::remove_cvref_t<decltype(sql::operation<name, Row, typename Left::node, node>{})>;
+
+				return TreeNode<right.pos, next>{};
 			}			
 		}
 
@@ -235,9 +242,9 @@ namespace sql
 		template <std::size_t Pos, typename Row>
 		static constexpr auto parse_comp() noexcept
 		{
-			constexpr auto left{ parse_terms<Pos, Row>() };
+			using left = decltype(parse_terms<Pos, Row>());
 			
-			return recurse_comp<decltype(left), Row>();
+			return recurse_comp<left, Row>();
 		}
 
 		// attempt to parse a negation operation then descend further
@@ -248,7 +255,9 @@ namespace sql
 			{
 				constexpr auto expr{ parse_comp<Pos + 1, Row>() };
 
-				return TreeNode<expr.pos, sql::operation<"NOT", Row, typename decltype(expr)::node>>{};
+				using node = typename decltype(expr)::node;
+
+				return TreeNode<expr.pos, sql::operation<"NOT", Row, node>>{};
 			}
 			else
 			{
@@ -267,9 +276,11 @@ namespace sql
 			else
 			{
 				constexpr auto right{ parse_negation<Left::pos + 1, Row>() };
-				constexpr auto node{ sql::operation<"AND", Row, typename Left::node, typename decltype(right)::node>{} };
 
-				return recurse_and<TreeNode<right.pos, std::remove_cvref_t<decltype(node)>>, Row>();
+				using node = typename decltype(right)::node;
+				using next = std::remove_cvref_t<decltype(sql::operation<"AND", Row, typename Left::node, node>{})>;
+
+				return recurse_and<TreeNode<right.pos, next>, Row>();
 			}
 		}
 
@@ -277,9 +288,9 @@ namespace sql
 		template <std::size_t Pos, typename Row>
 		static constexpr auto parse_and() noexcept
 		{
-			constexpr auto left{ parse_negation<Pos, Row>() };
+			using left = decltype(parse_negation<Pos, Row>());
 			
-			return recurse_and<decltype(left), Row>();
+			return recurse_and<left, Row>();
 		}
 		
 		// recursively parse chained OR operations
@@ -293,9 +304,11 @@ namespace sql
 			else
 			{
 				constexpr auto right{ parse_and<Left::pos + 1, Row>() };
-				constexpr auto node{ sql::operation<"OR", Row, typename Left::node, typename decltype(right)::node>{} };
+				
+				using node = typename decltype(right)::node;
+				using next = std::remove_cvref_t<decltype(sql::operation<"OR", Row, typename Left::node, node>{})>;
 
-				return recurse_or<TreeNode<right.pos, std::remove_cvref_t<decltype(node)>>, Row>();
+				return recurse_or<TreeNode<right.pos, next>, Row>();
 			}
 		}
 
@@ -303,9 +316,9 @@ namespace sql
 		template <std::size_t Pos, typename Row>
 		static constexpr auto parse_or() noexcept
 		{
-			constexpr auto left{ parse_and<Pos, Row>() };
+			using left = decltype(parse_and<Pos, Row>());
 			
-			return recurse_or<decltype(left), Row>();
+			return recurse_or<left, Row>();
 		}
 
 		// find correct schema for terminal relation
@@ -349,13 +362,17 @@ namespace sql
 		{
 			if constexpr (Pos + 3 < tokens_.count() && (tokens_[Pos + 2] == "join" || tokens_[Pos + 2] == "JOIN"))
 			{
-				constexpr auto node{ choose_join<Pos + 1, decltype(parse_schema<Pos>()), decltype(parse_schema<Pos + 3>())>() };
+				using left = decltype(parse_schema<Pos>());
+				using right = decltype(parse_schema<Pos + 3>());
+				using node = decltype(choose_join<Pos + 1, left, right>());
 
-				return TreeNode<Pos + 4, decltype(node)>{};
+				return TreeNode<Pos + 4, node>{};
 			}
 			else
 			{
-				return TreeNode<Pos + 1, decltype(parse_schema<Pos>())>{};
+				using root = decltype(parse_schema<Pos>());
+
+				return TreeNode<Pos + 1, root>{};
 			}
 		}
 
@@ -365,15 +382,18 @@ namespace sql
 		{
 			constexpr auto root{ parse_join<Pos>() };
 
+			using node = typename decltype(root)::node;
+
 			if constexpr (root.pos + 1 < tokens_.count() && (tokens_[root.pos] == "where" || tokens_[root.pos] == "WHERE"))
 			{
-				constexpr auto predicate{ parse_or<root.pos + 1, std::remove_cvref_t<typename decltype(root)::node::output_type>>() };
-				
-				return ra::selection<typename decltype(predicate)::node, typename decltype(root)::node>{};
+				using output = std::remove_cvref_t<typename node::output_type>;
+				using predicate = typename decltype(parse_or<root.pos + 1, output>())::node;
+
+				return ra::selection<predicate, node>{};
 			}
 			else
 			{
-				return typename decltype(root)::node{};	
+				return node{};	
 			}
 		}
 
@@ -445,8 +465,10 @@ namespace sql
 			if constexpr (Rename)
 			{
 				constexpr auto offset{ find_rename<Pos, Pos>() };
+
+				using col = decltype(column_type<Pos>());
 				
-				return ColInfo<decltype(column_type<Pos>()), offset, next>{};
+				return ColInfo<col, offset, next>{};
 			}
 			else
 			{
@@ -465,11 +487,13 @@ namespace sql
 			else
 			{
 				constexpr auto info{ parse_colinfo<Pos, Rename>() };
-				constexpr auto child{ recurse_columns<info.next, Rename>() };
 				constexpr cexpr::string<char, tokens_[info.name].length() + 1> name{ tokens_[info.name] };
-				constexpr auto col{ sql::column<name, typename decltype(info)::type>{} };
+				constexpr auto child{ recurse_columns<info.next, Rename>() };
 
-				return TreeNode<child.pos, sql::row<std::remove_const_t<decltype(col)>, std::remove_const_t<typename decltype(child)::node>>>{};
+				using next = std::remove_const_t<typename decltype(child)::node>;
+				using col = std::remove_const_t<decltype(sql::column<name, typename decltype(info)::type>{})>;
+
+				return TreeNode<child.pos, sql::row<col, next>>{};
 			}
 		}
 
@@ -479,16 +503,20 @@ namespace sql
 		{
 			constexpr auto projection{ recurse_columns<Pos, false>() };
 
-			return ra::projection<typename decltype(projection)::node, decltype(parse_from<projection.pos + 1>())>{};
+			using node = typename decltype(projection)::node;
+			using next = decltype(parse_from<projection.pos + 1>());
+
+			return ra::projection<node, next>{};
 		}
 
 		// wrapper to parse columns as a rename RA node
 		template <std::size_t Pos>
 		static constexpr auto parse_rename() noexcept
 		{
-			constexpr auto rename{ recurse_columns<Pos, true>() };
+			using node = typename decltype(recurse_columns<Pos, true>())::node;
+			using next = decltype(parse_projection<Pos>());
 
-			return ra::rename<typename decltype(rename)::node, decltype(parse_projection<Pos>())>{};
+			return ra::rename<node, next>{};
 		}
 
 		template <std::size_t Pos>

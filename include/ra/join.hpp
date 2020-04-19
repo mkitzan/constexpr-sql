@@ -24,7 +24,9 @@ namespace ra
 			}
 			else
 			{
-				return sql::row<typename Left::column, decltype(recr_merge<typename Left::next, Right>())>{};
+				using next = decltype(recr_merge<typename Left::next, Right>());
+
+				return sql::row<typename Left::column, next>{};
 			}
 		}
 
