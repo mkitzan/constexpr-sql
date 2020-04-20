@@ -20,7 +20,8 @@ namespace cexpr
 	public:
 		using char_type = CharT;
 
-		constexpr string() : size_{ 0 }, string_{ 0 } {}
+		constexpr string() : size_{ 0 }, string_{ 0 }
+		{}
 
 		constexpr string(const CharT(&s)[N]) : string{}
 		{
