@@ -193,10 +193,6 @@ namespace sql
 		row() = default;
 
 		template <typename... ColTs>
-		row(column::type val, ColTs... vals) : value_{ val }, next_{ vals... }
-		{}
-
-		template <typename... ColTs>
 		row(column::type const& val, ColTs const&... vals) : value_{ val }, next_{ vals... }
 		{}
 
