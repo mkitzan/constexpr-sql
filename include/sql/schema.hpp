@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include "cexpr/string.hpp"
+
 #include "sql/column.hpp"
 #include "sql/index.hpp"
 #include "sql/row.hpp"
@@ -13,10 +15,12 @@
 namespace sql
 {
 
-	template <typename Index, typename... Cols>
+	template <cexpr::string Name, typename Index, typename... Cols>
 	class schema
 	{
 	public:
+		static constexpr auto name{ Name };
+
 		using row_type = sql::variadic_row<Cols...>::row_type;
 		using container = typename
 			std::conditional_t<
@@ -25,7 +29,7 @@ namespace sql
 				std::multiset<row_type, typename Index::template comp<row_type>>
 			>;
 		using const_iterator = typename container::const_iterator;
-
+		
 		schema() = default;
 
 		template <typename T, typename... Ts>

@@ -169,6 +169,7 @@ namespace sql
 	struct column
 	{
 		static constexpr auto name{ Name };
+		
 		using type = Type;
 	};
 
@@ -344,10 +345,12 @@ namespace sql
 namespace sql
 {
 
-	template <typename Index, typename... Cols>
+	template <cexpr::string Name, typename Index, typename... Cols>
 	class schema
 	{
 	public:
+		static constexpr auto name{ Name };
+
 		using row_type = sql::variadic_row<Cols...>::row_type;
 		using container = typename
 			std::conditional_t<
@@ -356,7 +359,7 @@ namespace sql
 				std::multiset<row_type, typename Index::template comp<row_type>>
 			>;
 		using const_iterator = typename container::const_iterator;
-
+		
 		schema() = default;
 
 		template <typename T, typename... Ts>
@@ -1417,20 +1420,20 @@ namespace sql
 		}
 
 		// find correct schema for terminal relation
-		template <std::size_t Pos, std::size_t Id, typename Schema, typename... Others>
+		template <cexpr::string Name, std::size_t Id, typename Schema, typename... Others>
 		static constexpr auto recurse_schemas()
 		{
-			if constexpr (Pos == 0)
+			if constexpr (Name == Schema::name)
 			{
 				return ra::relation<Schema, Id>{};
 			}
 			else
 			{
-				return recurse_schemas<Pos - 1, Id, Others...>();
+				return recurse_schemas<Name, Id, Others...>();
 			}
 		}
 
-		// wrapper function to determine terminal relation (NOTE: max tables per query is 10 [0-9])
+		// wrapper function to determine terminal relation
 		template <std::size_t Pos>
 		static constexpr auto parse_schema()
 		{
@@ -1444,7 +1447,9 @@ namespace sql
 			}
 			else
 			{
-				using node = decltype(recurse_schemas<tokens_[Pos][1] - '0', Pos, Schemas...>());
+				constexpr cexpr::string<char, tokens_[Pos].length() + 1> name{ tokens_[Pos] };
+
+				using node = decltype(recurse_schemas<name, Pos, Schemas...>());
 
 				return TreeNode<Pos + 1, node>{};
 			}

@@ -35,10 +35,6 @@ def data(tokens):
 	return cs, ts
 
 def templ(query, ts):
-	num = 0
-	for t in ts:
-		query = query.replace(t, "T" + str(num))
-		num += 1
 	templ_spec = "\t\t\"" + query + "\""
 	for t in ts:
 		templ_spec += ",\n\t\t" + t

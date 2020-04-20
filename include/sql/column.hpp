@@ -9,6 +9,7 @@ namespace sql
 	struct column
 	{
 		static constexpr auto name{ Name };
+		
 		using type = Type;
 	};
 

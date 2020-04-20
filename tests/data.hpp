@@ -7,6 +7,7 @@
 
 using books =
 	sql::schema<
+		"books",
 		sql::index<>,
 #ifdef CROSS
 		sql::column<"book", std::string>,
@@ -20,6 +21,7 @@ using books =
 
 using stories =
 	sql::schema<
+		"stories",
 		sql::index<>,
 #ifdef CROSS
 		sql::column<"story", std::string>,
@@ -32,6 +34,7 @@ using stories =
 
 using authored =
 	sql::schema<
+		"authored",
 		sql::index<>,
 		sql::column<"title", std::string>,
 		sql::column<"name", std::string>
@@ -39,6 +42,7 @@ using authored =
 
 using collected =
 	sql::schema<
+		"collected",
 		sql::index<>,
 		sql::column<"title", std::string>,
 		sql::column<"collection", std::string>,
