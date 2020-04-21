@@ -20,8 +20,9 @@ Supported features:
 - Contemporary `!=` and legacy `<>` not-equal operator
 - Schemas support all default constructable types
 - Indexes for schemas (used for sorting the data)
-- Loading data from files (no header row)
 - Range loop and structured binding declaration support
+- Loading data from files (no header row)
+- Element querying from `sql::row` objects with [`sql::get<"col-name">(Row const&)`](https://github.com/mkitzan/constexpr-sql/blob/master/include/sql/row.hpp#L81)
 
 Unsupported features (future work):
 
