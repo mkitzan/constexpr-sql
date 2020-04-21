@@ -26,6 +26,7 @@ def main():
 			res = "Passed"
 			for line in stream:
 				res = "Failed"
+				break
 			print("\tTest " + str(num) + ":\t" + res + "\n\t\t" + query)
 			if res == "Failed":
 				exit()

@@ -51,10 +51,10 @@ using collected =
 
 const std::string data_folder{ "./data/" };
 const std::string perf_folder{ "../data/" };
-const std::string books_data{ "books-table.tsv" };
-const std::string stories_data{ "stories-table.tsv" };
-const std::string authored_data{ "authored-table.tsv" };
-const std::string collected_data{ "collected-table.tsv" };
+const std::string books_data{ "books-data.tsv" };
+const std::string stories_data{ "stories-data.tsv" };
+const std::string authored_data{ "authored-data.tsv" };
+const std::string collected_data{ "collected-data.tsv" };
 
 using books_row = std::tuple<std::string, std::string, int, int>;
 using books_type = std::vector<books_row>;

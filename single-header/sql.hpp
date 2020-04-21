@@ -377,13 +377,27 @@ namespace sql
 		template <typename... Ts>
 		inline void emplace(Ts const&... vals)
 		{
-			table_.emplace_back(vals...);
+			if constexpr (std::is_same_v<Index, sql::index<>>)
+			{
+				table_.emplace_back(vals...);
+			}
+			else
+			{
+				table_.emplace(vals...);
+			}
 		}
 
 		template <typename... Ts>
 		inline void emplace(Ts&&... vals)
 		{
-			table_.emplace_back(vals...);
+			if constexpr (std::is_same_v<Index, sql::index<>>)
+			{
+				table_.emplace_back(vals...);
+			}
+			else
+			{
+				table_.emplace(vals...);
+			}
 		}
 
 		template <typename T, typename... Ts>
@@ -406,12 +420,26 @@ namespace sql
 
 		void insert(row_type const& row)
 		{
-			table_.push_back(row);
+			if constexpr (std::is_same_v<Index, sql::index<>>)
+			{
+				table_.push_back(row);
+			}
+			else
+			{
+				table_.insert(row);
+			}
 		}
 
 		void insert(row_type&& row)
 		{
-			table_.push_back(std::forward<row_type>(row));
+			if constexpr (std::is_same_v<Index, sql::index<>>)
+			{
+				table_.push_back(std::forward<row_type>(row));
+			}
+			else
+			{
+				table_.insert(std::forward<row_type>(row));
+			}
 		}
 
 		inline const_iterator begin() const
@@ -1673,13 +1701,23 @@ namespace sql
 		static constexpr sql::tokens<char, sql::preprocess(Str)> tokens_{ Str };
 
 		using expression = decltype(parse_root<1>());
+
+		bool empty_;
 	
 	public:
 		using iterator = query_iterator<expression>;
 
-		constexpr query(Schemas const&... tables)
+		query(Schemas const&... tables)
 		{
-			expression::seed(tables...);
+			try 
+			{
+				expression::seed(tables...);
+				empty_ = false;
+			}
+			catch(ra::data_end const& e)
+			{
+				empty_ = true;
+			}
 		}
 
 		~query()
@@ -1687,12 +1725,12 @@ namespace sql
 			expression::reset();
 		}
 
-		constexpr iterator begin()
+		iterator begin()
 		{
-			return iterator{ false };
+			return iterator{ empty_ };
 		}
 
-		constexpr iterator end()
+		iterator end()
 		{
 			return iterator{ true };
 		}

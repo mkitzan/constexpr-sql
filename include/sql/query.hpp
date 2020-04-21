@@ -580,13 +580,23 @@ namespace sql
 		static constexpr sql::tokens<char, sql::preprocess(Str)> tokens_{ Str };
 
 		using expression = decltype(parse_root<1>());
+
+		bool empty_;
 	
 	public:
 		using iterator = query_iterator<expression>;
 
-		constexpr query(Schemas const&... tables)
+		query(Schemas const&... tables)
 		{
-			expression::seed(tables...);
+			try 
+			{
+				expression::seed(tables...);
+				empty_ = false;
+			}
+			catch(ra::data_end const& e)
+			{
+				empty_ = true;
+			}
 		}
 
 		~query()
@@ -594,12 +604,12 @@ namespace sql
 			expression::reset();
 		}
 
-		constexpr iterator begin()
+		iterator begin()
 		{
-			return iterator{ false };
+			return iterator{ empty_ };
 		}
 
-		constexpr iterator end()
+		iterator end()
 		{
 			return iterator{ true };
 		}
