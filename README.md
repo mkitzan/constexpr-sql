@@ -91,7 +91,7 @@ The example is from [`example.cpp`](https://github.com/mkitzan/constexpr-sql/blo
 g++ -std=c++2a -O3 -Isingle-header/ -o example example.cpp && ./example
 ```
 
-It is strongly recommended to compile with optimizations enabled, otherwise expect template bloat. Use of two object of the same `sql::query` type is considered **undefined behavior** (due to issue involving static members). Instantiating `sql::query` objects should be performed within a guarded scope, like in the example. However, there are no use restrictions to `sql::schema` types. `sql::schema` types may be used multiple times within a single query or in many queries at once. There are more examples and information in [`presentation.pdf`](https://github.com/mkitzan/constexpr-sql/blob/master/presentation.pdf) at the root of the repository.
+It is strongly recommended to compile with optimizations enabled, otherwise expect template bloat. Use of multiple objects of the same `sql::query` type is considered **undefined behavior** (due to issue involving static members). Instantiating `sql::query` objects should be performed within a guarded scope, like in the example. However, there are no use restrictions to `sql::schema` types. `sql::schema` types may be used multiple times within a single query or in many queries at once. There are more examples and information in [`presentation.pdf`](https://github.com/mkitzan/constexpr-sql/blob/master/presentation.pdf) at the root of the repository.
 
 ## Correctness and Performance Testing
 
