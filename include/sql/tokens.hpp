@@ -12,36 +12,36 @@ namespace sql
 	namespace
 	{
 		
-		template <typename CharT>
-		constexpr bool whitespace(CharT curr)
+		template <typename Char>
+		constexpr bool whitespace(Char curr)
 		{
-			return curr == CharT{ ' ' } || curr == CharT{ '\t' } || curr == CharT{ '\n' };
+			return curr == Char{ ' ' } || curr == Char{ '\t' } || curr == Char{ '\n' };
 		}
 
-		template <typename CharT>
-		constexpr bool syntax(CharT curr)
+		template <typename Char>
+		constexpr bool syntax(Char curr)
 		{
-			return curr == CharT{ ',' } || curr == CharT{ '(' } || curr == CharT{ ')' } ||
-				curr == CharT{ '\'' } || curr == CharT{ '\"' } || curr == CharT{ '=' };
+			return curr == Char{ ',' } || curr == Char{ '(' } || curr == Char{ ')' } ||
+				curr == Char{ '\'' } || curr == Char{ '\"' } || curr == Char{ '=' };
 		}
 
-		template <typename CharT>
-		constexpr const CharT* skip(const CharT *curr, const CharT *end)
+		template <typename Char>
+		constexpr const Char* skip(const Char *curr, const Char *end)
 		{
 			for (; curr != end && whitespace(*curr); ++curr);
 			return curr;
 		}
 
-		template <typename CharT>
-		constexpr const CharT* next(const CharT *curr, const CharT *end)
+		template <typename Char>
+		constexpr const Char* next(const Char *curr, const Char *end)
 		{
-			CharT c{ *curr };
+			Char c{ *curr };
 
-			if (c == CharT{ '>' } || c == CharT{ '<' } || c == CharT{ '!' })
+			if (c == Char{ '>' } || c == Char{ '<' } || c == Char{ '!' })
 			{
 				++curr;
 
-				if (*curr == CharT{ '=' } || (c == CharT{ '<' } && *curr == CharT{ '>' }))
+				if (*curr == Char{ '=' } || (c == Char{ '<' } && *curr == Char{ '>' }))
 				{
 					++curr;
 				}
@@ -60,14 +60,14 @@ namespace sql
 	
 	} // namespace
 
-	template <typename CharT, std::size_t Tn>
+	template <typename Char, std::size_t Count>
 	class tokens
 	{
 	public:
-		using token_view = std::basic_string_view<CharT>;
+		using token_view = std::basic_string_view<Char>;
 
 		template<std::size_t N>
-		constexpr tokens(cexpr::string<CharT, N> const& cs) : tokens_{}
+		constexpr tokens(cexpr::string<Char, N> const& cs) : tokens_{}
 		{
 			auto curr{ cs.cbegin() }, last{ cs.cbegin() };
 			const auto end{ cs.cend() };
@@ -79,7 +79,7 @@ namespace sql
 				last = curr;
 				last = next(last, end);
 
-				if (*curr == CharT{ '\"' } || *curr == CharT{ '\'' })
+				if (*curr == Char{ '\"' } || *curr == Char{ '\'' })
 				{
 					tokens_[i++] = token_view{ curr, 1 };
 					for (char c{ *curr++ }; last != end && *last != c; ++last);
@@ -88,7 +88,7 @@ namespace sql
 				auto len{ reinterpret_cast<std::size_t>(last) - reinterpret_cast<std::size_t>(curr) };
 				tokens_[i++] = token_view{ curr, len };
 
-				if (*last == CharT{ '\"' } || *last == CharT{ '\'' })
+				if (*last == Char{ '\"' } || *last == Char{ '\'' })
 				{
 					tokens_[i++] = token_view{ last, 1 };
 					++last;
@@ -100,7 +100,7 @@ namespace sql
 
 		constexpr std::size_t count() const noexcept
 		{
-			return Tn;
+			return Count;
 		}
 
 		constexpr token_view* begin() noexcept
@@ -131,11 +131,11 @@ namespace sql
 		}
 
 	private:
-		std::array<token_view, Tn> tokens_;
+		std::array<token_view, Count> tokens_;
 	};
 
-	template<typename CharT, std::size_t N>
-	constexpr std::size_t preprocess(cexpr::string<CharT, N> const& cs)
+	template<typename Char, std::size_t N>
+	constexpr std::size_t preprocess(cexpr::string<Char, N> const& cs)
 	{
 		auto begin{ cs.cbegin() };
 		const auto end{ cs.cend() };
