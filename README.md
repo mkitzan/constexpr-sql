@@ -2,7 +2,7 @@
 
 A light weight single header alternative to DBMS
 
-This library was developed during my honors project at the University of Victoria under the supervision of [Bill Bird](https://github.com/billbird). The original development occurred in this [metaprogramming-optimization](https://github.com/mkitzan/metaprogramming-optimization) repository, but was moved into a new, dedicated, home repo. The project was inspired by [Hana Dusíková](https://github.com/hanickadot)'s great [Compile Time Regular Expression](https://github.com/hanickadot/compile-time-regular-expressions) library (CTRE).
+This library was developed during my honors project at the University of Victoria under the supervision of [Bill Bird](https://github.com/billbird). The original development occurred in this [Metaprogramming Optimization](https://github.com/mkitzan/metaprogramming-optimization) repository, but was moved into a new, dedicated, home repo. The project was inspired by [Hana Dusíková](https://github.com/hanickadot)'s great [Compile Time Regular Expression](https://github.com/hanickadot/compile-time-regular-expressions) library (CTRE).
 
 ## Library Features and Compiler Support
 
@@ -13,11 +13,12 @@ Supported features:
 - `AS` column renaming
 - `CROSS JOIN` (note: all column names of each relation must be the unique)
 - `NATURAL JOIN` (note: natural join will attempt to join on the first column of each relation)
-- `WHERE` predicates on numeric and `std::string` types
+- `WHERE` clause predicates on numeric and `std::string` types
 - Wildcard selection with `*`
 - Nested queries
 - Uppercase and lowercase SQL keywords
 - Contemporary `!=` and legacy `<>` not-equal operator
+- Standard SQL operator precedence in `WHERE` clause
 - Schemas support all default constructable types
 - Indexes for schemas (used for sorting the data)
 - Range loop and structured binding declaration support
@@ -62,9 +63,9 @@ using authored =
 
 using query =
 	sql::query<
-		"SELECT title AS book, name AS author, pages "
+		"SELECT title AS book, name AS author, year, pages "
 		"FROM books NATURAL JOIN (SELECT * FROM authored WHERE name = \"Harlan Ellison\") "
-		"WHERE year = 1967 OR year >= 1972",
+		"WHERE year = 1967 OR year >= 1972 AND genre = \"science fiction\"",
 		books, authored
 	>;
 
@@ -73,9 +74,9 @@ int main()
 	authored a{ sql::load<authored, '\t'>("tests/data/authored.tsv") };
 	books b{ sql::load<books, '\t'>("tests/data/books.tsv") };
 
-	for (query q{ b, a }; auto const& [book, author, pages] : q)
+	for (query q{ b, a }; auto const& [book, author, year, pages] : q)
 	{
-		std::cout << book << '\t' << author << '\t' << pages << '\n';
+		std::cout << book << '\t' << author << '\t' << year << '\t' << pages << '\n';
 	}
 
 	return 0;

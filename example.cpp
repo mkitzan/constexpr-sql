@@ -21,9 +21,9 @@ using authored =
 
 using query =
 	sql::query<
-		"SELECT title AS book, name AS author, pages "
+		"SELECT title AS book, name AS author, year, pages "
 		"FROM books NATURAL JOIN (SELECT * FROM authored WHERE name = \"Harlan Ellison\") "
-		"WHERE year = 1967 OR year >= 1972",
+		"WHERE year = 1967 OR year >= 1972 AND genre = \"science fiction\"",
 		books, authored
 	>;
 
@@ -32,9 +32,9 @@ int main()
 	authored a{ sql::load<authored, '\t'>("tests/data/authored.tsv") };
 	books b{ sql::load<books, '\t'>("tests/data/books.tsv") };
 
-	for (query q{ b, a }; auto const& [book, author, pages] : q)
+	for (query q{ b, a }; auto const& [book, author, year, pages] : q)
 	{
-		std::cout << book << '\t' << author << '\t' << pages << '\n';
+		std::cout << book << '\t' << author << '\t' << year << '\t' << pages << '\n';
 	}
 
 	return 0;
