@@ -83,7 +83,7 @@ int main()
 
 [`sql::schema`](https://github.com/mkitzan/constexpr-sql/blob/master/include/sql/schema.hpp) defines a relation used in a query. [`sql::index`](https://github.com/mkitzan/constexpr-sql/blob/master/include/sql/index.hpp) defines how an `sql::schema` sorts its data (unsorted if unspecified). [`sql::column`](https://github.com/mkitzan/constexpr-sql/blob/master/include/sql/column.hpp) types are used to define the rows in an `sql::schema`. [`sql::query`](https://github.com/mkitzan/constexpr-sql/blob/master/include/sql/query.hpp) wraps an query statement and the `sql::schema` types the query will operate on. [`sql::load`](https://github.com/mkitzan/constexpr-sql/blob/master/include/sql/schema.hpp#L160) can be used to load data from a file into an `sql::schema`.
 
-The example can be found in [`example.cpp`](https://github.com/mkitzan/constexpr-sql/blob/master/example.cpp) in the root of the repository, and be compiled and executed with the following command:
+The example is from [`example.cpp`](https://github.com/mkitzan/constexpr-sql/blob/master/example.cpp) in the root of the repository, and can be compiled and executed with the following command:
 
 ```shell
 g++ -std=c++2a -O3 -Isingle-header/ -o example example.cpp && ./example
