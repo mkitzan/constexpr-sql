@@ -1528,16 +1528,20 @@ namespace sql
 
 			using node = typename decltype(next)::node;
 
-			if constexpr (next.pos + 1 < tokens_.count() && (tokens_[next.pos] == "where" || tokens_[next.pos] == "WHERE"))
+			if constexpr (next.pos < tokens_.count() && (tokens_[next.pos] == "where" || tokens_[next.pos] == "WHERE"))
 			{
 				using output = std::remove_cvref_t<typename node::output_type>;
-				using predicate = typename decltype(parse_or<next.pos + 1, output>())::node;
 
-				return ra::selection<predicate, node>{};
+				constexpr auto pred{ parse_or<next.pos + 1, output>() };
+
+				using pnext = typename decltype(pred)::node;
+				using snode = ra::selection<pnext, node>;
+
+				return TreeNode<pred.pos, snode>{};
 			}
 			else
 			{
-				return node{};	
+				return TreeNode<next.pos, node>{};	
 			}
 		}
 
@@ -1611,7 +1615,7 @@ namespace sql
 				constexpr auto offset{ find_rename<Pos, Pos>() };
 
 				using col = decltype(column_type<Pos>());
-				
+
 				return ColInfo<col, offset, next>{};
 			}
 			else
@@ -1636,8 +1640,9 @@ namespace sql
 
 				using next = std::remove_const_t<typename decltype(child)::node>;
 				using col = std::remove_const_t<decltype(sql::column<name, typename decltype(info)::type>{})>;
+				using node = sql::row<col, next>;
 
-				return TreeNode<child.pos, sql::row<col, next>>{};
+				return TreeNode<child.pos, node>{};
 			}
 		}
 
@@ -1645,22 +1650,25 @@ namespace sql
 		template <std::size_t Pos>
 		static constexpr auto parse_projection() noexcept
 		{
-			constexpr auto projection{ recurse_columns<Pos, false>() };
+			constexpr auto proj{ recurse_columns<Pos, false>() };
+			constexpr auto next{ parse_from<proj.pos + 1>() };
 
-			using node = typename decltype(projection)::node;
-			using next = decltype(parse_from<projection.pos + 1>());
+			using ranode = typename decltype(proj)::node;
+			using node = ra::projection<ranode, typename decltype(next)::node>;
 
-			return ra::projection<node, next>{};
+			return TreeNode<next.pos, node>{};
 		}
 
 		// wrapper to parse columns as a rename RA node
 		template <std::size_t Pos>
 		static constexpr auto parse_rename() noexcept
 		{
-			using node = typename decltype(recurse_columns<Pos, true>())::node;
-			using next = decltype(parse_projection<Pos>());
+			constexpr auto next = parse_projection<Pos>();
 
-			return ra::rename<node, next>{};
+			using ranode = typename decltype(recurse_columns<Pos, true>())::node;
+			using node = ra::rename<ranode, typename decltype(next)::node>;
+
+			return TreeNode<next.pos, node>{};
 		}
 
 		template <std::size_t Pos>
@@ -1700,7 +1708,7 @@ namespace sql
 
 		static constexpr sql::tokens<char, sql::preprocess(Str)> tokens_{ Str };
 
-		using expression = decltype(parse_root<1>());
+		using expression = typename decltype(parse_root<1>())::node;
 
 		bool empty_;
 	

@@ -2,7 +2,7 @@
 
 A light weight single header alternative to DBMS
 
-This library was developed during my honors project at UVic under the supervision of [Bill Bird](https://github.com/billbird). The original development occurred in this [metaprogramming-optimization](https://github.com/mkitzan/metaprogramming-optimization) repo, but was moved into a new, dedicated, home repo. The project was inspired by [Hana Dusíková](https://github.com/hanickadot)'s awesome [Compile Time Regular Expression library (CTRE)](https://github.com/hanickadot/compile-time-regular-expressions).
+This library was developed during my honors project at UVic under the supervision of [Bill Bird](https://github.com/billbird). The original development occurred in this [metaprogramming-optimization](https://github.com/mkitzan/metaprogramming-optimization) repo, but was moved into a new, dedicated, home repo. The project was inspired by [Hana Dusíková](https://github.com/hanickadot)'s awesome [Compile Time Regular Expression](https://github.com/hanickadot/compile-time-regular-expressions) library (CTRE).
 
 ## Library Features and Compiler Support
 
@@ -62,8 +62,8 @@ using authored =
 using query =
 	sql::query<
 		"SELECT title AS book, name AS author, pages "
-		"FROM books NATURAL JOIN authored "
-		"WHERE genre = \"science fiction\" AND year = 1967",
+		"FROM books NATURAL JOIN (SELECT * FROM authored WHERE name = \"Harlan Ellison\") "
+		"WHERE year = 1967 OR year >= 1972",
 		books, authored
 	>;
 

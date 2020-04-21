@@ -22,15 +22,15 @@ using authored =
 using query =
 	sql::query<
 		"SELECT title AS book, name AS author, pages "
-		"FROM books NATURAL JOIN authored "
-		"WHERE genre = \"science fiction\" AND year = 1967",
+		"FROM books NATURAL JOIN (SELECT * FROM authored WHERE name = \"Harlan Ellison\") "
+		"WHERE year = 1967 OR year >= 1972",
 		books, authored
 	>;
 
 int main()
 {
-	authored a{ sql::load<authored, '\t'>("./tests/data/authored-data.tsv") };
-	books b{ sql::load<books, '\t'>("./tests/data/books-data.tsv") };
+	authored a{ sql::load<authored, '\t'>("tests/data/authored-data.tsv") };
+	books b{ sql::load<books, '\t'>("tests/data/books-data.tsv") };
 
 	for (query q{ b, a }; auto const& [book, author, pages] : q)
 	{
