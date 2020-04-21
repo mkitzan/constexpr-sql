@@ -115,15 +115,50 @@ namespace sql
 		{
 			return tv[0] == '=' || tv[0] == '!' || tv[0] == '<' || tv[0] == '>';
 		}
-
-		constexpr bool isor(std::string_view const& tv) noexcept
+		
+		inline constexpr bool isquote(std::string_view const& tv) noexcept
 		{
-			return tv == "or" || tv == "OR";
+			return tv == "\"" || tv == "\'";
 		}
 
-		constexpr bool isand(std::string_view const& tv) noexcept
+		inline constexpr bool isor(std::string_view const& tv) noexcept
 		{
-			return tv == "and" || tv == "AND";
+			return tv == "OR" || tv == "or";
+		}
+
+		inline constexpr bool isand(std::string_view const& tv) noexcept
+		{
+			return tv == "AND" || tv == "and";
+		}
+
+		inline constexpr bool isnot(std::string_view const& tv) noexcept
+		{
+			return tv == "NOT" || tv == "not";
+		}
+
+		inline constexpr bool isnatural(std::string_view const& tv) noexcept
+		{
+			return tv == "NATURAL" || tv == "natural";
+		}
+
+		inline constexpr bool isjoin(std::string_view const& tv) noexcept
+		{
+			return tv == "JOIN" || tv == "join";
+		}
+
+		inline constexpr bool iswhere(std::string_view const& tv) noexcept
+		{
+			return tv == "WHERE" || tv == "where";
+		}
+
+		inline constexpr bool isfrom(std::string_view const& tv) noexcept
+		{
+			return tv == "FROM" || tv == "from";
+		}
+
+		inline constexpr bool isas(std::string_view const& tv) noexcept
+		{
+			return tv == "AS" || tv == "as";
 		}
 
 	} // namespace
@@ -194,7 +229,7 @@ namespace sql
 
 				return TreeNode<next.pos + 1, node>{};
 			}
-			else if constexpr (tokens_[Pos] == "\'" || tokens_[Pos] == "\"")
+			else if constexpr (isquote(tokens_[Pos]))
 			{
 				constexpr cexpr::string<char, tokens_[Pos + 1].length() + 1> name{ tokens_[Pos + 1] };
 
@@ -255,7 +290,7 @@ namespace sql
 		template <std::size_t Pos, typename Row>
 		static constexpr auto parse_negation() noexcept
 		{
-			if constexpr (tokens_[Pos] == "not" || tokens_[Pos] == "NOT")
+			if constexpr (isnot(tokens_[Pos]))
 			{
 				constexpr auto next{ parse_comp<Pos + 1, Row>() };
 
@@ -366,7 +401,7 @@ namespace sql
 		template <std::size_t Pos, typename Left, typename Right>
 		static constexpr auto choose_join()
 		{
-			if constexpr (tokens_[Pos] == "natural" || tokens_[Pos] == "NATURAL")
+			if constexpr (isnatural(tokens_[Pos]))
 			{
 				return ra::natural<Left, Right>{};
 			}
@@ -384,7 +419,7 @@ namespace sql
 
 			using lnode = typename decltype(lnext)::node;
 
-			if constexpr (lnext.pos + 2 < tokens_.count() && (tokens_[lnext.pos + 1] == "join" || tokens_[lnext.pos + 1] == "JOIN"))
+			if constexpr (lnext.pos + 2 < tokens_.count() && isjoin(tokens_[lnext.pos + 1]))
 			{
 				constexpr auto rnext{ parse_schema<lnext.pos + 2>() };
 
@@ -407,7 +442,7 @@ namespace sql
 
 			using node = typename decltype(next)::node;
 
-			if constexpr (next.pos < tokens_.count() && (tokens_[next.pos] == "where" || tokens_[next.pos] == "WHERE"))
+			if constexpr (next.pos < tokens_.count() && iswhere(tokens_[next.pos]))
 			{
 				using output = std::remove_cvref_t<typename node::output_type>;
 
@@ -455,7 +490,7 @@ namespace sql
 			{
 				return Pos + 1;
 			}
-			else if constexpr (tokens_[Pos] == "from" || tokens_[Pos] == "FROM")
+			else if constexpr (isfrom(tokens_[Pos]))
 			{
 				return Pos;
 			}
@@ -469,11 +504,11 @@ namespace sql
 		template <std::size_t Pos, std::size_t Curr>
 		static constexpr auto find_rename() noexcept
 		{
-			if constexpr (tokens_[Pos] == "," || tokens_[Pos] == "from" || tokens_[Pos] == "FROM")
+			if constexpr (tokens_[Pos] == "," || isfrom(tokens_[Pos]))
 			{
 				return Curr;
 			}
-			else if constexpr (tokens_[Pos] == "as" || tokens_[Pos] == "AS")
+			else if constexpr (isas(tokens_[Pos]))
 			{
 				return Pos + 1;
 			}
@@ -507,7 +542,7 @@ namespace sql
 		template <std::size_t Pos, bool Rename>
 		static constexpr auto recurse_columns() noexcept
 		{
-			if constexpr (tokens_[Pos] == "from" || tokens_[Pos] == "FROM")
+			if constexpr (isfrom(tokens_[Pos]))
 			{
 				return TreeNode<Pos, sql::void_row>{};
 			}
@@ -553,11 +588,11 @@ namespace sql
 		template <std::size_t Pos>
 		static constexpr bool has_rename() noexcept
 		{
-			if constexpr (tokens_[Pos] == "from" || tokens_[Pos] == "FROM")
+			if constexpr (isfrom(tokens_[Pos]))
 			{
 				return false;
 			}
-			else if constexpr (tokens_[Pos] == "as" || tokens_[Pos] == "AS")
+			else if constexpr (isas(tokens_[Pos]))
 			{
 				return true;
 			}
