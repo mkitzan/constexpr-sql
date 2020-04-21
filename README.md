@@ -92,6 +92,12 @@ g++ -std=c++2a -O3 -Isingle-header/ -o example example.cpp && ./example
 
 It is strongly recommended to compile with optimizations enabled, otherwise expect template bloat. Use of two object of the same `sql::query` type is considered **undefined behavior** (due to issue involving static members). Instantiating `sql::query` objects should be performed within a guarded scope, like in the example. However, there are no use restrictions to `sql::schema` types. `sql::schema` types may be used multiple times within a single query or in many queries at once. There are more examples and information in [`presentation.pdf`](https://github.com/mkitzan/constexpr-sql/blob/master/presentation.pdf) at the root of the repository.
 
+## Correctness and Performance Testing
+
+The library has a significant testing system which is composed of two script pipelines. All tests use the data from another project of mine called [`Terminus`](https://github.com/mkitzan/terminus) which is a library database shell. The correctness testing pipeline generates nearly 1.5 million test queries, then Constexpr SQL's output is compared against the output of `SQLite3` performing the same queries. The performance testing pipeline executes six different SQL queries implemented using Constexpr SQL and hand coded SQL. The queries are executed over 65 thousand times (256 for `CROSS JOIN` due to computational complexity), and the execution timing is captured using the Linux `time` tool.
+
+The [`runner.sh`](https://github.com/mkitzan/constexpr-sql/blob/master/tests/runner.sh) script in the `tests` directory will execute correctness testing, and the [`runner.sh`](https://github.com/mkitzan/constexpr-sql/tree/master/tests/perf/runner.sh) script in `tests/perf` will execute performance testing.
+
 ## Important Class Templates and Implementation Details
 
 The following sections provide a high-level description about how the library is implemented. Hopefully, the sections will provide useful code and document references to others looking to write similar libraries.

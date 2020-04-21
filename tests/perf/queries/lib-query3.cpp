@@ -4,7 +4,7 @@
 using query =
 	sql::query<
 		"SELECT genre AS type, year AS published, title, name "
-		"FROM T0 NATURAL JOIN T1 "
+		"FROM stories NATURAL JOIN authored "
 		"WHERE genre = \"science fiction\" AND year > 1970 AND name != \"Harlan Elison\"",
 		stories,
 		authored

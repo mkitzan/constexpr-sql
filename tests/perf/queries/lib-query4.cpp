@@ -4,7 +4,7 @@
 using query =
 	sql::query<
 		"SELECT book, genre AS type, year As published "
-		"FROM T0 CROSS JOIN T1 "
+		"FROM books CROSS JOIN authored "
 		"WHERE NOT genre != \"science fiction\" AND year > 1970",
 		books,
 		authored

@@ -7,8 +7,7 @@
 
 using books =
 	sql::schema<
-		"books",
-		sql::index<>,
+		"books", sql::index<>,
 #ifdef CROSS
 		sql::column<"book", std::string>,
 #else
@@ -21,8 +20,7 @@ using books =
 
 using stories =
 	sql::schema<
-		"stories",
-		sql::index<>,
+		"stories", sql::index<>,
 #ifdef CROSS
 		sql::column<"story", std::string>,
 #else
@@ -34,16 +32,14 @@ using stories =
 
 using authored =
 	sql::schema<
-		"authored",
-		sql::index<>,
+		"authored", sql::index<>,
 		sql::column<"title", std::string>,
 		sql::column<"name", std::string>
 	>;
 
 using collected =
 	sql::schema<
-		"collected",
-		sql::index<>,
+		"collected", sql::index<>,
 		sql::column<"title", std::string>,
 		sql::column<"collection", std::string>,
 		sql::column<"pages", unsigned>
@@ -51,10 +47,10 @@ using collected =
 
 const std::string data_folder{ "./data/" };
 const std::string perf_folder{ "../data/" };
-const std::string books_data{ "books-data.tsv" };
-const std::string stories_data{ "stories-data.tsv" };
-const std::string authored_data{ "authored-data.tsv" };
-const std::string collected_data{ "collected-data.tsv" };
+const std::string books_data{ "books.tsv" };
+const std::string stories_data{ "stories.tsv" };
+const std::string authored_data{ "authored.tsv" };
+const std::string collected_data{ "collected.tsv" };
 
 using books_row = std::tuple<std::string, std::string, int, int>;
 using books_type = std::vector<books_row>;

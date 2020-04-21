@@ -4,7 +4,7 @@
 using query =
 	sql::query<
 		"SELECT title, genre AS type, year AS published, pages "
-		"FROM T0 "
+		"FROM books "
 		"WHERE NOT genre <> \"science fiction\" AND NOT year >= 1970 OR pages < 300",
 		books
 	>;

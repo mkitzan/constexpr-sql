@@ -4,7 +4,7 @@
 using query =
 	sql::query<
 		"SELECT story, genre AS type, year AS published, title, collection, pages "
-		"FROM T0 CROSS join T1 "
+		"FROM stories CROSS join collected "
 		"WHERE genre != \"science fiction\" OR year >= 1970 OR NOT pages < 300",
 		stories,
 		collected
