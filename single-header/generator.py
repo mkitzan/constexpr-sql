@@ -28,6 +28,7 @@ def main():
 	included, incs = include(header, incs, "sql/query.hpp", included)
 	header.close()
 	header = open("sql.hpp", "w")
+	header.write("#pragma once\n\n")
 
 	for line in sorted(set(incs)):
 		header.write(line)
