@@ -79,7 +79,7 @@ namespace sql
 	template <auto Const, typename Row>
 	struct constant
 	{
-		static constexpr auto eval(Row const& row)
+		static constexpr auto eval(__attribute__((unused)) Row const& row)
 		{
 			return Const.val;
 		}

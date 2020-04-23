@@ -143,8 +143,8 @@ namespace cexpr
 		}
 
 	private:
-		Char string_[N];
 		std::size_t size_;
+		Char string_[N];
 	};
 
 	template <typename Char, std::size_t N>
@@ -1133,7 +1133,7 @@ namespace sql
 	template <auto Const, typename Row>
 	struct constant
 	{
-		static constexpr auto eval(Row const& row)
+		static constexpr auto eval(__attribute__((unused)) Row const& row)
 		{
 			return Const.val;
 		}
@@ -1187,7 +1187,7 @@ namespace sql
 		constexpr value<ValT> convert(cexpr::string<CharT, N> const& str)
 		{
 			auto curr{ str.cbegin() }, end{ str.cend() };
-			constexpr CharT nul{ '\0' }, dot{ '.' }, zro{ '0' }, min{ '-' };
+			constexpr CharT dot{ '.' }, zro{ '0' }, min{ '-' };
 			ValT acc{}, sign{ 1 }, scalar{ 10 };
 
 			if (*curr == min)
@@ -1723,7 +1723,7 @@ namespace sql
 			{
 				return has_rename<Pos + 1>();
 			}
-		};
+		}
 
 		// decide RA node to root the expression tree
 		template <std::size_t Pos>

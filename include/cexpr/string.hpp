@@ -134,8 +134,8 @@ namespace cexpr
 		}
 
 	private:
-		Char string_[N];
 		std::size_t size_;
+		Char string_[N];
 	};
 
 	template <typename Char, std::size_t N>
