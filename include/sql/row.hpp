@@ -106,8 +106,8 @@ namespace sql
 	}
 
 	// function to assign a value to a column's value in a row
-	template <cexpr::string Name, typename Row, typename T>
-	constexpr void set(Row& r, T const& value)
+	template <cexpr::string Name, typename Row, typename Type>
+	constexpr void set(Row& r, Type const& value)
 	{
 		if constexpr (Row::column::name == Name)
 		{
@@ -129,10 +129,10 @@ namespace std
 	class tuple_size<sql::row<Col, Next>> : public integral_constant<size_t, sql::row<Col, Next>::depth>
 	{};
 
-	template <size_t I, typename Col, typename Next>
-	struct tuple_element<I, sql::row<Col, Next>>
+	template <size_t Index, typename Col, typename Next>
+	struct tuple_element<Index, sql::row<Col, Next>>
 	{
-		using type = decltype(sql::get<I>(sql::row<Col, Next>{}));
+		using type = decltype(sql::get<Index>(sql::row<Col, Next>{}));
 	};
 
 } // namespace std

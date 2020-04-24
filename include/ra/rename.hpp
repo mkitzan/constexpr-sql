@@ -14,11 +14,11 @@ namespace ra
 	public:
 		using output_type = Output;
 
-		static auto& next()
+		static auto&& next()
 		{
 			fold<output_type, input_type>(output_row, Input::next());
 			
-			return output_row;
+			return std::move(output_row);
 		}
 
 	private:

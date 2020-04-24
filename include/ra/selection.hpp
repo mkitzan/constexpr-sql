@@ -12,7 +12,7 @@ namespace ra
 	public:
 		using output_type = input_type;		
 
-		static auto& next()
+		static auto&& next()
 		{
 			output_row = Input::next();
 
@@ -21,7 +21,7 @@ namespace ra
 				output_row = Input::next();
 			}
 
-			return output_row;
+			return std::move(output_row);
 		}
 
 	private:

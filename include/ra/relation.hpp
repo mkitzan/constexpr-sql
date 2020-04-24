@@ -9,6 +9,8 @@ namespace ra
 	struct data_end : std::exception
 	{};
 
+	// Id template parameter allows unique ra::relation types to be instantiated from
+	//	a single sql::schema type (for queries referencing a schema multiple times).
 	template <typename Schema, std::size_t Id>
 	class relation
 	{

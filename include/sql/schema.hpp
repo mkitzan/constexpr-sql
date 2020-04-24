@@ -26,39 +26,26 @@ namespace sql
 			std::conditional_t<
 				std::is_same_v<Index, sql::index<>>,
 				std::vector<row_type>,
-				std::multiset<row_type, typename Index::template comp<row_type>>
+				std::multiset<row_type, typename Index::template comparator<row_type>>
 			>;
 		using const_iterator = typename container::const_iterator;
 		
 		schema() = default;
 
-		template <typename T, typename... Ts>
-		schema(std::vector<T> const& col, Ts const&... cols) : schema{}
+		template <typename Type, typename... Types>
+		schema(std::vector<Type> const& col, Types const&... cols) : schema{}
 		{
 			insert(col, cols...);
 		}
 
-		template <typename T, typename... Ts>
-		schema(std::vector<T>&& col, Ts&&... cols) : schema{}
+		template <typename Type, typename... Types>
+		schema(std::vector<Type>&& col, Types&&... cols) : schema{}
 		{
-			insert(std::forward<T>(col), std::forward<Ts>(cols)...);
+			insert(std::forward<Type>(col), std::forward<Types>(cols)...);
 		}
 
-		template <typename... Ts>
-		inline void emplace(Ts const&... vals)
-		{
-			if constexpr (std::is_same_v<Index, sql::index<>>)
-			{
-				table_.emplace_back(vals...);
-			}
-			else
-			{
-				table_.emplace(vals...);
-			}
-		}
-
-		template <typename... Ts>
-		inline void emplace(Ts&&... vals)
+		template <typename... Types>
+		inline void emplace(Types const&... vals)
 		{
 			if constexpr (std::is_same_v<Index, sql::index<>>)
 			{
@@ -70,8 +57,21 @@ namespace sql
 			}
 		}
 
-		template <typename T, typename... Ts>
-		void insert(std::vector<T> const& col, Ts const&... cols)
+		template <typename... Types>
+		inline void emplace(Types&&... vals)
+		{
+			if constexpr (std::is_same_v<Index, sql::index<>>)
+			{
+				table_.emplace_back(vals...);
+			}
+			else
+			{
+				table_.emplace(vals...);
+			}
+		}
+
+		template <typename Type, typename... Types>
+		void insert(std::vector<Type> const& col, Types const&... cols)
 		{
 			for (std::size_t i{}; i < col.size(); ++i)
 			{
@@ -79,12 +79,12 @@ namespace sql
 			}
 		}
 
-		template <typename T, typename... Ts>
-		void insert(std::vector<T>&& col, Ts&&... cols)
+		template <typename Type, typename... Types>
+		void insert(std::vector<Type>&& col, Types&&... cols)
 		{
 			for (std::size_t i{}; i < col.size(); ++i)
 			{
-				emplace(std::forward<T>(col[i]),std::forward<Ts>(cols[i])...);
+				emplace(std::forward<Type>(col[i]),std::forward<Types>(cols[i])...);
 			}
 		}
 

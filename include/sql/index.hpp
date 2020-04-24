@@ -13,7 +13,7 @@ namespace sql
 	struct index
 	{
 		template <typename Row>
-		struct comp
+		struct comparator
 		{
 			bool operator()(Row const& left, Row const& right) const
 			{

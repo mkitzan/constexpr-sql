@@ -13,7 +13,7 @@ Supported features:
 - SQL query syntax for data processing
 - `SELECT` data querying
 - `AS` column renaming
-- `CROSS JOIN` (note: all column names of each relation must be the unique)
+- `CROSS JOIN` (note: all column names of each relation must be unique)
 - `NATURAL JOIN` (note: natural join will attempt to join on the first column of each relation)
 - `WHERE` clause predicates on numeric and `std::string` types
 - Wildcard selection with `*`
@@ -25,7 +25,7 @@ Supported features:
 - Indexes for schemas (used for sorting the data)
 - Range loop and structured binding declaration support
 - Loading data from files (no header row)
-- Element querying from `sql::row` objects with [`sql::get<"col-name">(Row const&)`](https://github.com/mkitzan/constexpr-sql/blob/master/include/sql/row.hpp#L81)
+- Element querying from `sql::row` objects with [`sql::get<"column-name">`](https://github.com/mkitzan/constexpr-sql/blob/master/include/sql/row.hpp#L81)
 
 Unsupported features (future work):
 

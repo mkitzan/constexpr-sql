@@ -12,13 +12,13 @@ namespace sql
 
 		// shim to allow all value types like double or float
 		//	to be used as non-type template parameters.
-		template <typename ValT>
+		template <typename Type>
 		struct value
 		{
-			constexpr value(ValT v) : val{ v }
+			constexpr value(Type v) : val{ v }
 			{}
 
-			ValT val;
+			Type val;
 		};
 
 	} // namespace

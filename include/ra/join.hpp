@@ -107,7 +107,7 @@ namespace ra
 	public:
 		using output_type = join_type::output_type;
 
-		static auto& next()
+		static auto&& next()
 		{
 			try
 			{
@@ -120,7 +120,7 @@ namespace ra
 				copy(join_type::output_row, RightInput::next());
 			}
 
-			return join_type::output_row;
+			return std::move(join_type::output_row);
 		}
 	};
 
@@ -160,7 +160,7 @@ namespace ra
 			end = active.cend();
 		}
 
-		static auto& next()
+		static auto&& next()
 		{
 			while (curr == end)
 			{
@@ -172,7 +172,7 @@ namespace ra
 
 			copy(join_type::output_row, *curr++);
 			
-			return join_type::output_row;
+			return std::move(join_type::output_row);
 		}
 
 	private:
