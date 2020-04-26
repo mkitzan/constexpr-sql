@@ -46,7 +46,7 @@ def func(ts, cs):
 	out = "\tstd::cout << "
 	count = 0
 	for t in ts:
-		body += "\t" + t + " t" + str(count) + "{ sql::load<" + t + ", '\\t'>(data_folder + " + t + "_data) };\n"
+		body += "\t" + t + " t" + str(count) + "{ sql::load<" + t + ">(data_folder + " + t + "_data, '\\t') };\n"
 		args += "t" + str(count) + ", "
 		count += 1
 	body += "\n\tfor (query q{ " + args[:-2] + " }; auto const& ["

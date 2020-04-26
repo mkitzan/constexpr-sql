@@ -24,7 +24,8 @@ Supported features:
 - Schemas support all default constructable types
 - Indexes for schemas (used for sorting the data)
 - Range loop and structured binding declaration support
-- Loading data from files (no header row)
+- [Loading data](https://github.com/mkitzan/constexpr-sql/blob/master/include/sql/schema.hpp#L180) from files (no header row)
+- [Storing data](https://github.com/mkitzan/constexpr-sql/blob/master/include/sql/schema.hpp#L210) from `sql::schema` and `sql::query` objects to files
 - Element querying from `sql::row` objects with [`sql::get<"column-name">`](https://github.com/mkitzan/constexpr-sql/blob/master/include/sql/row.hpp#L81)
 
 Unsupported features (future work):
@@ -32,7 +33,6 @@ Unsupported features (future work):
 - `INNER JOIN`, `OUTER JOIN`, `LEFT JOIN`, and `RIGHT JOIN`
 - `GROUP BY`, `HAVING`, and `ORDER BY` (using indexes can simulate some of these features)
 - `IN` operation within `WHERE` clause
-- Helper function for writing query output to file
 - Template argument error detection
 
 As of April 2020, Constexpr SQL is only supported by **`GCC 9.0+`**. The compiler support is constrained because of the widespread use of the new `C++20` feature ["Class Types in Non-Type Template Parameters"](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0732r2.pdf) (proposal `P0732R2`) which is only implemented by `GCC 9.0+`. Library users specify SQL queries and column labels with string literals which are converted into `constexpr` objects all of which relies on functionality from `P0732R2`.
@@ -73,8 +73,8 @@ using query =
 
 int main()
 {
-	authored a{ sql::load<authored, '\t'>("tests/data/authored.tsv") };
-	books b{ sql::load<books, '\t'>("tests/data/books.tsv") };
+	authored a{ sql::load<authored>("tests/data/authored.tsv", '\t') };
+	books b{ sql::load<books>("tests/data/books.tsv", '\t') };
 
 	for (query q{ b, a }; auto const& [book, author, year, pages] : q)
 	{
@@ -127,7 +127,7 @@ The example does not demonstrate the [`sql::get<cexpr::string>`](https://github.
 
 ### Relational Algebra Expression Nodes
 
-At the moment, [`ra::projection`](https://github.com/mkitzan/constexpr-sql/blob/master/include/ra/projection.hpp), [`ra::rename`](https://github.com/mkitzan/constexpr-sql/blob/master/include/ra/rename.hpp), [`ra::cross`](https://github.com/mkitzan/constexpr-sql/blob/master/include/ra/join.hpp#L101), [`ra::natural`](https://github.com/mkitzan/constexpr-sql/blob/master/include/ra/join.hpp#L125), and [`ra::relation`](https://github.com/mkitzan/constexpr-sql/blob/master/include/ra/relation.hpp) are the only relational algebra nodes implemented. `ra::projection` and `ra::rename` are unary operators which take a single `sql::row` from their `Input` relational algebra operator and fold their operation over the row before propagating the transformed row to their `Output`. The `fold` is implemented as a template recursive function. `ra::cross` outputs the cross product of two relations. `ra::natural` implements a natural join between two relations using a hash table buffer of the right relation for performance. `ra::relation` is the only terminal node in the expression tree which is used for retrieving the next input in the stream. These operators are composable types and are used to serialize the relational algebra expression tree. Individual objects of each type are not instantiated to compose the expression tree. Instead to ensure the expression tree is a zero overhead abstraction, the types implement a `static` member function `next` used to request data from its input type. The actual `constexpr` template recursive recursive descent SQL parser will serialize these individual nodes together into the appropriate expression tree.
+At the moment, [`ra::projection`](https://github.com/mkitzan/constexpr-sql/blob/master/include/ra/projection.hpp), [`ra::rename`](https://github.com/mkitzan/constexpr-sql/blob/master/include/ra/rename.hpp), [`ra::cross`](https://github.com/mkitzan/constexpr-sql/blob/master/include/ra/cross.hpp), [`ra::natural`](https://github.com/mkitzan/constexpr-sql/blob/master/include/ra/natural.hpp), and [`ra::relation`](https://github.com/mkitzan/constexpr-sql/blob/master/include/ra/relation.hpp) are the only relational algebra nodes implemented. `ra::projection` and `ra::rename` are unary operators which take a single `sql::row` from their `Input` relational algebra operator and fold their operation over the row before propagating the transformed row to their `Output`. The `fold` is implemented as a template recursive function. `ra::cross` outputs the cross product of two relations. `ra::natural` implements a natural join between two relations using a hash table buffer of the right relation for performance. `ra::relation` is the only terminal node in the expression tree which is used for retrieving the next input in the stream. These operators are composable types and are used to serialize the relational algebra expression tree. Individual objects of each type are not instantiated to compose the expression tree. Instead to ensure the expression tree is a zero overhead abstraction, the types implement a `static` member function `next` used to request data from its input type. The actual `constexpr` template recursive recursive descent SQL parser will serialize these individual nodes together into the appropriate expression tree.
 
 ### Constexpr Parsing
 

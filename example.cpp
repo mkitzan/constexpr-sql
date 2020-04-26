@@ -29,8 +29,8 @@ using query =
 
 int main()
 {
-	authored a{ sql::load<authored, '\t'>("tests/data/authored.tsv") };
-	books b{ sql::load<books, '\t'>("tests/data/books.tsv") };
+	authored a{ sql::load<authored>("tests/data/authored.tsv", '\t') };
+	books b{ sql::load<books>("tests/data/books.tsv", '\t') };
 
 	for (query q{ b, a }; auto const& [book, author, year, pages] : q)
 	{

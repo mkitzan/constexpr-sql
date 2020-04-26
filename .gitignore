@@ -4,3 +4,4 @@ tests/test
 tests/queries/*
 .vscode/*
 example
+.DS_STORE

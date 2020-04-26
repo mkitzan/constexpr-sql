@@ -11,7 +11,7 @@ using query =
 
 int main()
 {
-	books b{ sql::load<books, '\t'>(perf_folder + books_data) };
+	books b{ sql::load<books>(perf_folder + books_data), '\t' };
 
 	for (std::size_t i{}; i < iters; ++i)
 	{

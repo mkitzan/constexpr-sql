@@ -129,8 +129,8 @@ namespace sql
 	namespace
 	{
 
-		template <typename Row, char Delim>
-		void fill(std::fstream& file, Row& row)
+		template <typename Row>
+		void fill(std::fstream& fstr, Row& row, char delim)
 		{
 			if constexpr (!std::is_same_v<Row, sql::void_row>)
 			{
@@ -138,45 +138,91 @@ namespace sql
 				{
 					if constexpr (std::is_same_v<typename Row::next, sql::void_row>)
 					{
-						std::getline(file, row.head());
+						std::getline(fstr, row.head());
 					}
 					else
 					{
-						std::getline(file, row.head(), Delim);
+						std::getline(fstr, row.head(), delim);
 					}
 				}
 				else
 				{
-					file >> row.head();
+					fstr >> row.head();
 				}
 
-				fill<typename Row::next, Delim>(file, row.tail());
+				fill<typename Row::next>(fstr, row.tail(), delim);
+			}
+		}
+
+		template <typename Row>
+		void fill(std::fstream& fstr, Row const& row, char delim)
+		{
+			if constexpr (!std::is_same_v<Row, sql::void_row>)
+			{
+				fstr << row.head();
+
+				if constexpr (std::is_same_v<typename Row::next, sql::void_row>)
+				{
+					fstr << '\n';
+				}
+				else
+				{
+					fstr << delim;
+				}
+				
+				fill<typename Row::next>(fstr, row.tail(), delim);
 			}
 		}
 
 	} // namespace
 
 	// helper function for users to load a data into a schema from a file
-	template <typename Schema, char Delim>
-	Schema load(std::string const& data)
+	template <typename Schema>
+	Schema load(std::string const& file, char delim)
 	{
-		auto file{ std::fstream(data) };
+		auto fstr{ std::fstream(file, fstr.in) };
 		Schema table{};
 		typename Schema::row_type row{};
 
-		while (file)
+		while (fstr)
 		{
-			fill<typename Schema::row_type, Delim>(file, row);
+			fill<typename Schema::row_type>(fstr, row, delim);
 			table.insert(std::move(row));
 
 			// in case last stream extraction did not remove newline
-			if (file.get() != '\n')
+			if (fstr.get() != '\n')
 			{
-				file.unget();
+				fstr.unget();
 			}
 		}
 
 		return table;
+	}
+
+	// for compat with previous versions
+	template <typename Schema, char Delim>
+	Schema load(std::string const& file)
+	{
+		return load<Schema>(file, Delim);
+	}
+
+	// will work with schema and query objects
+	template <typename Type>
+	void store(Type const& data, std::string const& file, char delim)
+	{
+		auto fstr{ std::fstream(file, fstr.out) };
+
+		for (auto const& row : data)
+		{
+			fill<typename Type::row_type>(fstr, row, delim);
+		}
+	}
+
+	// for devs who want to use the previous format
+	template <typename Type, char Delim>
+	void store(Type const& data, std::string const& file)
+	{
+		store<Type>(data, file, Delim);
 	}
 
 } // namespace sql

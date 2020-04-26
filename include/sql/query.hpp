@@ -7,7 +7,9 @@
 
 #include "cexpr/string.hpp"
 
+#include "ra/cross.hpp"
 #include "ra/join.hpp"
+#include "ra/natural.hpp"
 #include "ra/projection.hpp"
 #include "ra/relation.hpp"
 #include "ra/rename.hpp"
@@ -630,6 +632,7 @@ namespace sql
 	
 	public:
 		using iterator = query_iterator<expression>;
+		using row_type = expression::output_type;
 
 		query(Schemas const&... tables)
 		{
@@ -649,12 +652,12 @@ namespace sql
 			expression::reset();
 		}
 
-		iterator begin()
+		iterator begin() const
 		{
 			return iterator{ empty_ };
 		}
 
-		iterator end()
+		iterator end() const
 		{
 			return iterator{ true };
 		}

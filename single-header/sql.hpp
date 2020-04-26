@@ -461,8 +461,8 @@ namespace sql
 	namespace
 	{
 
-		template <typename Row, char Delim>
-		void fill(std::fstream& file, Row& row)
+		template <typename Row>
+		void fill(std::fstream& fstr, Row& row, char delim)
 		{
 			if constexpr (!std::is_same_v<Row, sql::void_row>)
 			{
@@ -470,45 +470,91 @@ namespace sql
 				{
 					if constexpr (std::is_same_v<typename Row::next, sql::void_row>)
 					{
-						std::getline(file, row.head());
+						std::getline(fstr, row.head());
 					}
 					else
 					{
-						std::getline(file, row.head(), Delim);
+						std::getline(fstr, row.head(), delim);
 					}
 				}
 				else
 				{
-					file >> row.head();
+					fstr >> row.head();
 				}
 
-				fill<typename Row::next, Delim>(file, row.tail());
+				fill<typename Row::next>(fstr, row.tail(), delim);
+			}
+		}
+
+		template <typename Row>
+		void fill(std::fstream& fstr, Row const& row, char delim)
+		{
+			if constexpr (!std::is_same_v<Row, sql::void_row>)
+			{
+				fstr << row.head();
+
+				if constexpr (std::is_same_v<typename Row::next, sql::void_row>)
+				{
+					fstr << '\n';
+				}
+				else
+				{
+					fstr << delim;
+				}
+				
+				fill<typename Row::next>(fstr, row.tail(), delim);
 			}
 		}
 
 	} // namespace
 
 	// helper function for users to load a data into a schema from a file
-	template <typename Schema, char Delim>
-	Schema load(std::string const& data)
+	template <typename Schema>
+	Schema load(std::string const& file, char delim)
 	{
-		auto file{ std::fstream(data) };
+		auto fstr{ std::fstream(file, fstr.in) };
 		Schema table{};
 		typename Schema::row_type row{};
 
-		while (file)
+		while (fstr)
 		{
-			fill<typename Schema::row_type, Delim>(file, row);
+			fill<typename Schema::row_type>(fstr, row, delim);
 			table.insert(std::move(row));
 
 			// in case last stream extraction did not remove newline
-			if (file.get() != '\n')
+			if (fstr.get() != '\n')
 			{
-				file.unget();
+				fstr.unget();
 			}
 		}
 
 		return table;
+	}
+
+	// for compat with previous versions
+	template <typename Schema, char Delim>
+	Schema load(std::string const& file)
+	{
+		return load<Schema>(file, Delim);
+	}
+
+	// will work with schema and query objects
+	template <typename Type>
+	void store(Type const& data, std::string const& file, char delim)
+	{
+		auto fstr{ std::fstream(file, fstr.out) };
+
+		for (auto const& row : data)
+		{
+			fill<typename Type::row_type>(fstr, row, delim);
+		}
+	}
+
+	// for devs who want to use the previous format
+	template <typename Type, char Delim>
+	void store(Type const& data, std::string const& file)
+	{
+		store<Type>(data, file, Delim);
 	}
 
 } // namespace sql
@@ -554,69 +600,6 @@ namespace ra
 			RightInput::reset();
 		}
 	};
-
-} // namespace ra
-
-namespace ra
-{
-
-	struct data_end : std::exception
-	{};
-
-	// Id template parameter allows unique ra::relation types to be instantiated from
-	//	a single sql::schema type (for queries referencing a schema multiple times).
-	template <typename Schema, std::size_t Id>
-	class relation
-	{
-	public:
-		using output_type = Schema::row_type&;
-
-		static auto& next()
-		{
-			if (curr != end)
-			{
-				return *curr++;
-			}
-			else
-			{
-				throw ra::data_end{};
-			}
-		}
-		
-		template <typename Input, typename... Inputs>
-		static void seed(Input const& r, Inputs const&... rs)
-		{
-			if constexpr (std::is_same_v<Input, Schema>)
-			{
-				curr = r.begin();
-				begin = r.begin();
-				end = r.end();
-			}
-			else
-			{
-				seed(rs...);
-			}
-		}
-
-		static inline void reset()
-		{
-			curr = begin;
-		}
-
-	private:
-		static Schema::const_iterator curr;
-		static Schema::const_iterator begin;
-		static Schema::const_iterator end;
-	};
-
-	template <typename Schema, std::size_t Id>
-	Schema::const_iterator relation<Schema, Id>::curr{};
-
-	template <typename Schema, std::size_t Id>
-	Schema::const_iterator relation<Schema, Id>::begin{};
-
-	template <typename Schema, std::size_t Id>
-	Schema::const_iterator relation<Schema, Id>::end{};
 
 } // namespace ra
 
@@ -711,6 +694,74 @@ namespace ra
 	template <typename LeftInput, typename RightInput>
 	typename join<LeftInput, RightInput>::output_type join<LeftInput, RightInput>::output_row{};
 
+} // namespace ra
+
+namespace ra
+{
+
+	struct data_end : std::exception
+	{};
+
+	// Id template parameter allows unique ra::relation types to be instantiated from
+	//	a single sql::schema type (for queries referencing a schema multiple times).
+	template <typename Schema, std::size_t Id>
+	class relation
+	{
+	public:
+		using output_type = Schema::row_type&;
+
+		static auto& next()
+		{
+			if (curr != end)
+			{
+				return *curr++;
+			}
+			else
+			{
+				throw ra::data_end{};
+			}
+		}
+		
+		template <typename Input, typename... Inputs>
+		static void seed(Input const& r, Inputs const&... rs)
+		{
+			if constexpr (std::is_same_v<Input, Schema>)
+			{
+				curr = r.begin();
+				begin = r.begin();
+				end = r.end();
+			}
+			else
+			{
+				seed(rs...);
+			}
+		}
+
+		static inline void reset()
+		{
+			curr = begin;
+		}
+
+	private:
+		static Schema::const_iterator curr;
+		static Schema::const_iterator begin;
+		static Schema::const_iterator end;
+	};
+
+	template <typename Schema, std::size_t Id>
+	Schema::const_iterator relation<Schema, Id>::curr{};
+
+	template <typename Schema, std::size_t Id>
+	Schema::const_iterator relation<Schema, Id>::begin{};
+
+	template <typename Schema, std::size_t Id>
+	Schema::const_iterator relation<Schema, Id>::end{};
+
+} // namespace ra
+
+namespace ra
+{
+
 	template <typename LeftInput, typename RightInput>
 	class cross : public ra::join<LeftInput, RightInput>
 	{
@@ -734,6 +785,11 @@ namespace ra
 			return std::move(join_type::output_row);
 		}
 	};
+
+} // namespace ra
+
+namespace ra
+{
 
 	template <typename LeftInput, typename RightInput>
 	class natural : public ra::join<LeftInput, RightInput>
@@ -1755,6 +1811,7 @@ namespace sql
 	
 	public:
 		using iterator = query_iterator<expression>;
+		using row_type = expression::output_type;
 
 		query(Schemas const&... tables)
 		{
@@ -1774,12 +1831,12 @@ namespace sql
 			expression::reset();
 		}
 
-		iterator begin()
+		iterator begin() const
 		{
 			return iterator{ empty_ };
 		}
 
-		iterator end()
+		iterator end() const
 		{
 			return iterator{ true };
 		}
