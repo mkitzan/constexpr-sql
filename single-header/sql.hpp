@@ -471,7 +471,7 @@ namespace sql
 	{
 
 		template <typename Row>
-		void fill(std::fstream& fstr, Row& row, __attribute__((unused)) char delim)
+		void fill(std::fstream& fstr, Row& row, [[maybe_unused]] char delim)
 		{
 			if constexpr (!std::is_same_v<Row, sql::void_row>)
 			{
@@ -1201,7 +1201,7 @@ namespace sql
 	template <auto Const, typename Row>
 	struct constant
 	{
-		static constexpr auto eval(__attribute__((unused)) Row const& row) noexcept
+		static constexpr auto eval([[maybe_unused]] Row const& row) noexcept
 		{
 			return Const.val;
 		}
