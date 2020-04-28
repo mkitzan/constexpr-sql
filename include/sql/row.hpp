@@ -81,6 +81,8 @@ namespace sql
 	template <cexpr::string Name, typename Row>
 	constexpr auto const& get(Row const& r)
 	{
+		static_assert(!std::is_same_v<Row, sql::void_row>, "Name does not match a column name.");
+
 		if constexpr (Row::column::name == Name)
 		{
 			return r.head();
@@ -95,6 +97,8 @@ namespace sql
 	template <std::size_t Pos, typename Row>
 	constexpr auto const& get(Row const& r)
 	{
+		static_assert(Pos < Row::depth, "Position is larger than number of row columns.");
+
 		if constexpr (Pos == 0)
 		{
 			return r.head();
@@ -109,6 +113,8 @@ namespace sql
 	template <cexpr::string Name, typename Row, typename Type>
 	constexpr void set(Row& r, Type const& value)
 	{
+		static_assert(!std::is_same_v<Row, sql::void_row>, "Name does not match a column name.");
+
 		if constexpr (Row::column::name == Name)
 		{
 			r.head() = value;

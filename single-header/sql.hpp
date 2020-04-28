@@ -252,6 +252,8 @@ namespace sql
 	template <cexpr::string Name, typename Row>
 	constexpr auto const& get(Row const& r)
 	{
+		static_assert(!std::is_same_v<Row, sql::void_row>, "Name does not match a column name.");
+
 		if constexpr (Row::column::name == Name)
 		{
 			return r.head();
@@ -266,6 +268,8 @@ namespace sql
 	template <std::size_t Pos, typename Row>
 	constexpr auto const& get(Row const& r)
 	{
+		static_assert(Pos < Row::depth, "Position is larger than number of row columns.");
+
 		if constexpr (Pos == 0)
 		{
 			return r.head();
@@ -280,6 +284,8 @@ namespace sql
 	template <cexpr::string Name, typename Row, typename Type>
 	constexpr void set(Row& r, Type const& value)
 	{
+		static_assert(!std::is_same_v<Row, sql::void_row>, "Name does not match a column name.");
+
 		if constexpr (Row::column::name == Name)
 		{
 			r.head() = value;
@@ -1275,31 +1281,9 @@ namespace sql
 			return value<Type>{ acc * sign };
 		}
 
-		constexpr bool isintegral(std::string_view const& tv) noexcept
-		{
-			bool result{ false };
-
-			for (auto c : tv)
-			{
-				result |= (c == '.');
-			}
-
-			return !result;
-		}
-
-		constexpr bool isdigit(char c) noexcept
-		{
-			return c == '-' || c == '.' || (c >= '0' && c <= '9');
-		}
-
-		constexpr bool iscomp(std::string_view const& tv) noexcept
-		{
-			return tv[0] == '=' || tv[0] == '!' || tv[0] == '<' || tv[0] == '>';
-		}
-		
 		inline constexpr bool isquote(std::string_view const& tv) noexcept
 		{
-			return tv == "\"" || tv == "\'";
+			return tv == "\"" || tv == "'";
 		}
 
 		inline constexpr bool isor(std::string_view const& tv) noexcept
@@ -1340,6 +1324,48 @@ namespace sql
 		inline constexpr bool isas(std::string_view const& tv) noexcept
 		{
 			return tv == "AS" || tv == "as";
+		}
+
+		inline constexpr bool isselect(std::string_view const& tv) noexcept
+		{
+			return tv == "SELECT" || tv == "select";
+		}
+
+		inline constexpr bool iscomma(std::string_view const& tv) noexcept
+		{
+			return tv == ",";
+		}
+
+		constexpr bool isintegral(std::string_view const& tv) noexcept
+		{
+			bool result{ false };
+
+			for (auto c : tv)
+			{
+				result |= (c == '.');
+			}
+
+			return !result;
+		}
+
+		constexpr bool isdigit(char c) noexcept
+		{
+			return (c >= '0' && c <= '9') || c == '-' || c == '.';
+		}
+
+		constexpr bool iscomp(std::string_view const& tv) noexcept
+		{
+			return tv[0] == '=' || tv[0] == '!' || tv[0] == '<' || tv[0] == '>';
+		}
+
+		constexpr bool iscolumn(std::string_view const& tv) noexcept
+		{
+			return !iscomma(tv) && !isas(tv) && !isfrom(tv);
+		}
+
+		constexpr bool isseparator(std::string_view const& tv) noexcept
+		{
+			return iscomma(tv) || isfrom(tv);
 		}
 
 	} // namespace
@@ -1408,6 +1434,8 @@ namespace sql
 
 				using node = typename decltype(next)::node;
 
+				static_assert(tokens_[next.pos] == ")", "No closing paranthesis found.");
+
 				return context<next.pos + 1, node>{};
 			}
 			else if constexpr (isquote(tokens_[Pos]))
@@ -1416,6 +1444,8 @@ namespace sql
 
 				using str = decltype(name);
 				using node = sql::constant<value<str>{ name }, Row>;
+
+				static_assert(isquote(tokens_[Pos + 2]), "No closing quote found.");
 
 				return context<Pos + 3, node>{};
 			}
@@ -1552,6 +1582,8 @@ namespace sql
 			}
 			else
 			{
+				static_assert(sizeof...(Others) != 0, "Schema name used in JOIN was not provided.");
+
 				return recurse_schemas<Name, Id, Others...>();
 			}
 		}
@@ -1562,9 +1594,11 @@ namespace sql
 		{
 			if constexpr (tokens_[Pos] == "(")
 			{
-				constexpr auto next{ parse_root<Pos + 2>() };
+				constexpr auto next{ parse_root<Pos + 1>() };
 				
 				using node = typename decltype(next)::node;
+
+				static_assert(tokens_[next.pos] == ")", "No closing paranthesis found.");
 
 				return context<next.pos + 1, node>{};
 			}
@@ -1619,7 +1653,9 @@ namespace sql
 		template <std::size_t Pos>
 		static constexpr auto parse_from() noexcept
 		{
-			constexpr auto next{ parse_join<Pos>() };
+			static_assert(isfrom(tokens_[Pos]), "Expected 'FROM' token not found.");
+
+			constexpr auto next{ parse_join<Pos + 1>() };
 
 			using node = typename decltype(next)::node;
 
@@ -1650,6 +1686,8 @@ namespace sql
 			}
 			else
 			{
+				static_assert(sizeof...(Others) != 0, "Column name was not present in any schema.");
+
 				return recurse_types<Name, Others...>();
 			}
 		}
@@ -1663,59 +1701,46 @@ namespace sql
 			return recurse_types<name, Schemas...>();
 		}
 
-		// searches for the token position of start of the next column in the token array
+		// asserts token is column separator, and if comma returns one past the comma else start position
 		template <std::size_t Pos>
-		static constexpr auto next_column() noexcept
+		static constexpr std::size_t next_column() noexcept
 		{
-			if constexpr (tokens_[Pos] == ",")
+			static_assert(isseparator(tokens_[Pos]), "Expected ',' or 'FROM' token following column declaration.");
+
+			if constexpr (iscomma(tokens_[Pos]))
 			{
 				return Pos + 1;
 			}
-			else if constexpr (isfrom(tokens_[Pos]))
+			else
 			{
 				return Pos;
 			}
-			else
-			{
-				return next_column<Pos + 1>();
-			}
 		}
 
-		// search for if the column is renamed, and returns the position of the name change if so
-		template <std::size_t Pos, std::size_t Curr>
-		static constexpr auto find_rename() noexcept
-		{
-			if constexpr (tokens_[Pos] == "," || isfrom(tokens_[Pos]))
-			{
-				return Curr;
-			}
-			else if constexpr (isas(tokens_[Pos]))
-			{
-				return Pos + 1;
-			}
-			else
-			{
-				return find_rename<Pos + 1, Curr>();
-			}
-		}
-
-		// parses the column starting from Pos for all it's colinfo (name, type, and pos of next column)
 		template <std::size_t Pos, bool Rename>
 		static constexpr auto parse_colinfo() noexcept
 		{
-			constexpr auto next{ next_column<Pos>() };
+			static_assert(iscolumn(tokens_[Pos]), "Invalid token starting column delcaration.");
 
-			if constexpr (Rename)
+			constexpr bool rename{ isas(tokens_[Pos + 1]) && iscolumn(tokens_[Pos + 2]) };
+
+			using col = decltype(column_type<Pos>());
+
+			if constexpr (Rename && rename)
 			{
-				constexpr auto offset{ find_rename<Pos, Pos>() };
+				constexpr auto next{ next_column<Pos + 3>() };
 
-				using col = decltype(column_type<Pos>());
+				return colinfo<col, Pos + 2, next>{};
+			}
+			else if constexpr (rename)
+			{
+				constexpr auto next{ next_column<Pos + 3>() };
 
-				return colinfo<col, offset, next>{};
+				return colinfo<col, Pos, next>{};
 			}
 			else
 			{
-				using col = decltype(column_type<Pos>());
+				constexpr auto next{ next_column<Pos + 1>() };
 
 				return colinfo<col, Pos, next>{};
 			}
@@ -1748,7 +1773,7 @@ namespace sql
 		static constexpr auto parse_projection() noexcept
 		{
 			constexpr auto proj{ recurse_columns<Pos, false>() };
-			constexpr auto next{ parse_from<proj.pos + 1>() };
+			constexpr auto next{ parse_from<proj.pos>() };
 
 			using ranode = typename decltype(proj)::node;
 			using node = ra::projection<ranode, typename decltype(next)::node>;
@@ -1768,20 +1793,24 @@ namespace sql
 			return context<next.pos, node>{};
 		}
 
+		// attempts to match column rename operation pattern on a column declaration
 		template <std::size_t Pos>
 		static constexpr bool has_rename() noexcept
 		{
-			if constexpr (isfrom(tokens_[Pos]))
+			if constexpr (isfrom(tokens_[Pos]) || isfrom(tokens_[Pos + 2]))
 			{
 				return false;
 			}
-			else if constexpr (isas(tokens_[Pos]))
+			else if constexpr (iscolumn(tokens_[Pos]) && isas(tokens_[Pos + 1]) && iscolumn(tokens_[Pos + 2]))
 			{
 				return true;
 			}
 			else
 			{
-				return has_rename<Pos + 1>();
+				// earlier "isfrom(tokens_[Pos + 2])" will catch FROM token
+				static_assert(iscomma(tokens_[Pos + 1]), "Expected ',' or 'FROM' token following column declaration.");
+
+				return has_rename<Pos + 2>();
 			}
 		}
 
@@ -1789,23 +1818,25 @@ namespace sql
 		template <std::size_t Pos>
 		static constexpr auto parse_root() noexcept
 		{
-			if constexpr (tokens_[Pos] == "*")
+			static_assert(isselect(tokens_[Pos]), "Expected 'SELECT' token not found.");
+
+			if constexpr (tokens_[Pos + 1] == "*")
 			{
 				return parse_from<Pos + 2>();
 			}
 			else if constexpr (has_rename<Pos + 1>())
 			{
-				return parse_projection<Pos>();
+				return parse_rename<Pos + 1>();
 			}
 			else
 			{
-				return parse_rename<Pos>();
+				return parse_projection<Pos + 1>();
 			}
 		}
 
 		static constexpr sql::tokens<char, sql::preprocess(Str)> tokens_{ Str };
 
-		using expression = typename decltype(parse_root<1>())::node;
+		using expression = typename decltype(parse_root<0>())::node;
 
 		bool empty_;
 	
