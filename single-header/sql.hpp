@@ -22,10 +22,10 @@ namespace cexpr
 	public:
 		using char_type = Char;
 
-		constexpr string() : size_{ 0 }, string_{ 0 }
+		constexpr string() noexcept : size_{ 0 }, string_{ 0 }
 		{}
 
-		constexpr string(const Char(&s)[N]) : string{}
+		constexpr string(const Char(&s)[N]) noexcept : string{}
 		{
 			for(; s[size_]; ++size_)
 			{
@@ -33,7 +33,7 @@ namespace cexpr
 			}
 		}
 
-		constexpr string(cexpr::string<Char, N> const& s) : string{}
+		constexpr string(cexpr::string<Char, N> const& s) noexcept : string{}
 		{
 			for (; s[size_]; ++size_)
 			{
@@ -41,20 +41,23 @@ namespace cexpr
 			}
 		}
 
-		constexpr string(std::basic_string_view<Char> const& s) : string{}
+		constexpr string(std::basic_string_view<Char> const& s) noexcept : string{}
 		{
-			for (; size_ < s.length(); ++size_)
+			if (s.length() < N)
 			{
-				string_[size_] = s[size_];
+				for (; size_ < s.length(); ++size_)
+				{
+					string_[size_] = s[size_];
+				}
 			}
 		}
 
-		constexpr void fill(const Char* begin, const Char* end)
+		constexpr void fill(const Char* begin, const Char* end) noexcept
 		{
 			fill_from(begin, end, begin());
 		}
 
-		constexpr void fill_from(const Char* begin, const Char* end, Char* start)
+		constexpr void fill_from(const Char* begin, const Char* end, Char* start) noexcept
 		{
 			if (end - begin < N)
 			{
@@ -65,45 +68,45 @@ namespace cexpr
 			}
 		}
 
-		constexpr std::size_t capacity() const noexcept
+		inline constexpr std::size_t capacity() const noexcept
 		{ 
 			return N - 1;
 		}
 
-		constexpr std::size_t size() const noexcept
+		inline constexpr std::size_t size() const noexcept
 		{
 			return size_;
 		}
 
-		constexpr Char* begin() noexcept
+		inline constexpr Char* begin() noexcept
 		{
 			return string_;
 		}
-		constexpr const Char* cbegin() const noexcept
+		inline constexpr const Char* cbegin() const noexcept
 		{
 			return string_;
 		}
 
-		constexpr Char* end() noexcept
+		inline constexpr Char* end() noexcept
 		{
 			return &string_[size_];
 		}
-		constexpr const Char* cend() const noexcept
+		inline constexpr const Char* cend() const noexcept
 		{
 			return &string_[size_];
 		}
 
-		constexpr Char& operator[](std::size_t i) noexcept
+		inline constexpr Char& operator[](std::size_t i)
 		{
 			return string_[i];
 		}
-		constexpr Char const& operator[](std::size_t i) const noexcept
+		inline constexpr Char const& operator[](std::size_t i) const
 		{
 			return string_[i];
 		}
 
 		template <typename OtherChar, std::size_t OtherN>
-		constexpr bool operator==(string<OtherChar, OtherN> const& other) const
+		constexpr bool operator==(string<OtherChar, OtherN> const& other) const noexcept
 		{
 			if constexpr (N != OtherN)
 			{
@@ -117,7 +120,7 @@ namespace cexpr
 		}
 
 		template <typename OtherChar, std::size_t OtherN>
-		constexpr bool operator==(const OtherChar(&other)[OtherN]) const
+		constexpr bool operator==(const OtherChar(&other)[OtherN]) const noexcept
 		{
 			if constexpr (N != OtherN)
 			{
@@ -131,13 +134,13 @@ namespace cexpr
 		}
 
 		template <typename OtherChar>
-		bool operator==(std::basic_string<OtherChar> const& other) const
+		inline bool operator==(std::basic_string<OtherChar> const& other) const noexcept
 		{
 			return other == string_;
 		}
 
 		template <typename OtherChar>
-		bool operator!=(std::basic_string<OtherChar> const& other) const
+		inline bool operator!=(std::basic_string<OtherChar> const& other) const noexcept
 		{
 			return !(other == string_);
 		}
@@ -151,13 +154,13 @@ namespace cexpr
 	string(const Char[N]) -> string<Char, N>;
 
 	template <typename Char, std::size_t N>
-	bool operator==(std::basic_string<Char> const& str, string<Char, N> const& cstr)
+	inline bool operator==(std::basic_string<Char> const& str, string<Char, N> const& cstr) noexcept
 	{
 		return cstr == str;
 	}
 
 	template <typename Char, std::size_t N>
-	bool operator!=(std::basic_string<Char> const& str, string<Char, N> const& cstr)
+	inline bool operator!=(std::basic_string<Char> const& str, string<Char, N> const& cstr) noexcept
 	{
 		return cstr != str;
 	}
@@ -203,22 +206,22 @@ namespace sql
 		row(column::type&& val, ColTs&&... vals) : value_{ std::forward<column::type>(val) }, next_{ std::forward<ColTs>(vals)... }
 		{}
 
-		inline constexpr next const& tail() const
+		inline constexpr next const& tail() const noexcept
 		{
 			return next_;
 		}
 
-		inline constexpr next& tail()
+		inline constexpr next& tail() noexcept
 		{
 			return next_;
 		}
 
-		inline constexpr column::type const& head() const
+		inline constexpr column::type const& head() const noexcept
 		{
 			return value_;
 		}
 
-		inline constexpr column::type& head()
+		inline constexpr column::type& head() noexcept
 		{
 			return value_;
 		}
@@ -232,7 +235,7 @@ namespace sql
 	struct variadic_row
 	{
 	private:
-		static inline constexpr auto resolve()
+		static inline constexpr auto resolve() noexcept
 		{
 			if constexpr (sizeof...(Cols) != 0)
 			{
@@ -250,7 +253,7 @@ namespace sql
 
 	// user function to query row elements by column name
 	template <cexpr::string Name, typename Row>
-	constexpr auto const& get(Row const& r)
+	constexpr auto const& get(Row const& r) noexcept
 	{
 		static_assert(!std::is_same_v<Row, sql::void_row>, "Name does not match a column name.");
 
@@ -266,7 +269,7 @@ namespace sql
 
 	// compiler function used by structured binding declaration
 	template <std::size_t Pos, typename Row>
-	constexpr auto const& get(Row const& r)
+	constexpr auto const& get(Row const& r) noexcept
 	{
 		static_assert(Pos < Row::depth, "Position is larger than number of row columns.");
 
@@ -323,14 +326,14 @@ namespace sql
 		template <typename Row>
 		struct comparator
 		{
-			bool operator()(Row const& left, Row const& right) const
+			bool operator()(Row const& left, Row const& right) const noexcept
 			{
 				return compare<Columns...>(left, right);
 			}
 		
 		private:
 			template <cexpr::string Col, cexpr::string... Cols>
-			bool compare(Row const& left, Row const& right) const
+			bool compare(Row const& left, Row const& right) const noexcept
 			{
 				auto const& l{ sql::get<Col>(left) };
 				auto const& r{ sql::get<Col>(right) };
@@ -422,7 +425,7 @@ namespace sql
 		{
 			for (std::size_t i{}; i < col.size(); ++i)
 			{
-				emplace(std::forward<Type>(col[i]),std::forward<Types>(cols[i])...);
+				emplace(std::forward<Type>(col[i]), std::forward<Types>(cols[i])...);
 			}
 		}
 
@@ -450,12 +453,12 @@ namespace sql
 			}
 		}
 
-		inline const_iterator begin() const
+		inline const_iterator begin() const noexcept
 		{
 			return table_.begin();
 		}
 
-		inline const_iterator end() const
+		inline const_iterator end() const noexcept
 		{
 			return table_.end();
 		}
@@ -729,7 +732,7 @@ namespace ra
 		}
 		
 		template <typename Input, typename... Inputs>
-		static void seed(Input const& r, Inputs const&... rs)
+		static void seed(Input const& r, Inputs const&... rs) noexcept
 		{
 			if constexpr (std::is_same_v<Input, Schema>)
 			{
@@ -743,7 +746,7 @@ namespace ra
 			}
 		}
 
-		static inline void reset()
+		static inline void reset() noexcept
 		{
 			curr = begin;
 		}
@@ -1035,6 +1038,8 @@ namespace sql
 	public:
 		using token_view = std::basic_string_view<Char>;
 
+		constexpr tokens() = default;
+
 		template<std::size_t N>
 		constexpr tokens(cexpr::string<Char, N> const& cs) : tokens_{}
 		{
@@ -1090,11 +1095,11 @@ namespace sql
 			return tokens_.cend();
 		}
 
-		constexpr token_view& operator[](std::size_t i) noexcept
+		constexpr token_view& operator[](std::size_t i)
 		{
 			return tokens_[i];
 		}
-		constexpr token_view const& operator[](std::size_t i) const noexcept
+		constexpr token_view const& operator[](std::size_t i) const
 		{
 			return tokens_[i];
 		}
@@ -1104,7 +1109,7 @@ namespace sql
 	};
 
 	template<typename Char, std::size_t N>
-	constexpr std::size_t preprocess(cexpr::string<Char, N> const& cs)
+	constexpr std::size_t preprocess(cexpr::string<Char, N> const& cs) noexcept
 	{
 		auto begin{ cs.cbegin() };
 		const auto end{ cs.cend() };
@@ -1128,8 +1133,7 @@ namespace sql
 	namespace
 	{
 
-		// shim to allow all value types like double or float
-		//	to be used as non-type template parameters.
+		// shim to allow all value types like double or float to be used as non-type template parameters.
 		template <typename Type>
 		struct value
 		{
@@ -1144,7 +1148,7 @@ namespace sql
 	template <cexpr::string Op, typename Row, typename Left, typename Right=void>
 	struct operation
 	{
-		static constexpr bool eval(Row const& row)
+		static constexpr bool eval(Row const& row) noexcept
 		{
 			if constexpr (Op == "=")
 			{
@@ -1188,7 +1192,7 @@ namespace sql
 	template <cexpr::string Column, typename Row>
 	struct variable
 	{
-		static constexpr auto eval(Row const& row)
+		static constexpr auto eval(Row const& row) noexcept
 		{
 			return sql::get<Column>(row);
 		}
@@ -1197,7 +1201,7 @@ namespace sql
 	template <auto Const, typename Row>
 	struct constant
 	{
-		static constexpr auto eval(__attribute__((unused)) Row const& row)
+		static constexpr auto eval(__attribute__((unused)) Row const& row) noexcept
 		{
 			return Const.val;
 		}
@@ -1248,7 +1252,7 @@ namespace sql
 		}
 
 		template <typename Type, typename Char, std::size_t N>
-		constexpr value<Type> convert(cexpr::string<Char, N> const& str)
+		constexpr value<Type> convert(cexpr::string<Char, N> const& str) noexcept
 		{
 			auto curr{ str.cbegin() }, end{ str.cend() };
 			constexpr Char dot{ '.' }, zro{ '0' }, min{ '-' };
@@ -1353,9 +1357,9 @@ namespace sql
 			return (c >= '0' && c <= '9') || c == '-' || c == '.';
 		}
 
-		constexpr bool iscomp(std::string_view const& tv) noexcept
+		constexpr bool iscomp(char c) noexcept
 		{
-			return tv[0] == '=' || tv[0] == '!' || tv[0] == '<' || tv[0] == '>';
+			return c == '=' || c == '!' || c == '<' || c == '>';
 		}
 
 		constexpr bool iscolumn(std::string_view const& tv) noexcept
@@ -1383,17 +1387,17 @@ namespace sql
 			operator++();
 		}
 
-		bool operator==(query_iterator const& it) const
+		inline bool operator==(query_iterator const& it) const noexcept
 		{
 			return end_ == it.end_;
 		}
 
-		bool operator!=(query_iterator const& it) const
+		inline bool operator!=(query_iterator const& it) const noexcept
 		{
 			return !(*this == it);
 		}
 
-		row_type const& operator*() const
+		inline row_type const& operator*() const noexcept
 		{
 			return row_;
 		}
@@ -1426,7 +1430,7 @@ namespace sql
 	private:
 		// where predicate terminal parsing 
 		template <std::size_t Pos, typename Row>
-		static constexpr auto parse_terms() noexcept
+		static constexpr auto parse_terms()
 		{
 			if constexpr (tokens_[Pos] == "(")
 			{
@@ -1470,9 +1474,9 @@ namespace sql
 
 		// parses a single compare operation
 		template <typename Left, typename Row>
-		static constexpr auto recurse_comparison() noexcept
+		static constexpr auto recurse_comparison()
 		{
-			if constexpr (!iscomp(tokens_[Left::pos]))
+			if constexpr (!iscomp(tokens_[Left::pos][0]))
 			{
 				return Left{};
 			}
@@ -1490,7 +1494,7 @@ namespace sql
 
 		// descend further and attempt to parse a compare operation
 		template <std::size_t Pos, typename Row>
-		static constexpr auto parse_comparison() noexcept
+		static constexpr auto parse_comparison()
 		{
 			using left = decltype(parse_terms<Pos, Row>());
 			
@@ -1499,7 +1503,7 @@ namespace sql
 
 		// attempt to parse a negation operation then descend further
 		template <std::size_t Pos, typename Row>
-		static constexpr auto parse_negation() noexcept
+		static constexpr auto parse_negation()
 		{
 			if constexpr (isnot(tokens_[Pos]))
 			{
@@ -1518,7 +1522,7 @@ namespace sql
 
 		// recursively parse chained AND operations
 		template <typename Left, typename Row>
-		static constexpr auto recurse_and() noexcept
+		static constexpr auto recurse_and()
 		{
 			if constexpr (!isand(tokens_[Left::pos]))
 			{
@@ -1537,7 +1541,7 @@ namespace sql
 
 		// descend further then attempt to parse AND operations
 		template <std::size_t Pos, typename Row>
-		static constexpr auto parse_and() noexcept
+		static constexpr auto parse_and()
 		{
 			using left = decltype(parse_negation<Pos, Row>());
 			
@@ -1546,7 +1550,7 @@ namespace sql
 		
 		// recursively parse chained OR operations
 		template <typename Left, typename Row>
-		static constexpr auto recurse_or() noexcept
+		static constexpr auto recurse_or()
 		{
 			if constexpr (!isor(tokens_[Left::pos]))
 			{
@@ -1565,7 +1569,7 @@ namespace sql
 
 		// descend further then attempt to parse OR operations
 		template <std::size_t Pos, typename Row>
-		static constexpr auto parse_or() noexcept
+		static constexpr auto parse_or()
 		{
 			using left = decltype(parse_and<Pos, Row>());
 			
@@ -1628,7 +1632,7 @@ namespace sql
 
 		// parses join colinfo if a join is present else returns the single relation terminal
 		template <std::size_t Pos>
-		static constexpr auto parse_join() noexcept
+		static constexpr auto parse_join()
 		{
 			constexpr auto lnext{ parse_schema<Pos>() };
 
@@ -1651,7 +1655,7 @@ namespace sql
 
 		// starting point to parse everything after the from keyword
 		template <std::size_t Pos>
-		static constexpr auto parse_from() noexcept
+		static constexpr auto parse_from()
 		{
 			static_assert(isfrom(tokens_[Pos]), "Expected 'FROM' token not found.");
 
@@ -1694,7 +1698,7 @@ namespace sql
 
 		// wrapper to determine the type for the the column
 		template <std::size_t Pos>
-		static constexpr auto column_type() noexcept
+		static constexpr auto column_type()
 		{
 			constexpr cexpr::string<char, tokens_[Pos].length() + 1> name{ tokens_[Pos] };
 
@@ -1703,7 +1707,7 @@ namespace sql
 
 		// asserts token is column separator, and if comma returns one past the comma else start position
 		template <std::size_t Pos>
-		static constexpr std::size_t next_column() noexcept
+		static constexpr std::size_t next_column()
 		{
 			static_assert(isseparator(tokens_[Pos]), "Expected ',' or 'FROM' token following column.");
 
@@ -1718,7 +1722,7 @@ namespace sql
 		}
 
 		template <std::size_t Pos, bool Rename>
-		static constexpr auto parse_colinfo() noexcept
+		static constexpr auto parse_colinfo()
 		{
 			static_assert(iscolumn(tokens_[Pos]), "Invalid token starting column delcaration.");
 
@@ -1748,7 +1752,7 @@ namespace sql
 
 		// recursively parse all columns projected/renamed in the query
 		template <std::size_t Pos, bool Rename>
-		static constexpr auto recurse_columns() noexcept
+		static constexpr auto recurse_columns()
 		{
 			if constexpr (isfrom(tokens_[Pos]))
 			{
@@ -1770,7 +1774,7 @@ namespace sql
 
 		// wrapper to parse columns as a projection RA node
 		template <std::size_t Pos>
-		static constexpr auto parse_projection() noexcept
+		static constexpr auto parse_projection()
 		{
 			constexpr auto proj{ recurse_columns<Pos, false>() };
 			constexpr auto next{ parse_from<proj.pos>() };
@@ -1783,7 +1787,7 @@ namespace sql
 
 		// wrapper to parse columns as a rename RA node
 		template <std::size_t Pos>
-		static constexpr auto parse_rename() noexcept
+		static constexpr auto parse_rename()
 		{
 			constexpr auto next = parse_projection<Pos>();
 
@@ -1795,7 +1799,7 @@ namespace sql
 
 		// attempts to match column rename operation pattern on a column
 		template <std::size_t Pos>
-		static constexpr bool has_rename() noexcept
+		static constexpr bool has_rename()
 		{
 			if constexpr (isfrom(tokens_[Pos]) || isfrom(tokens_[Pos + 2]))
 			{
@@ -1824,7 +1828,7 @@ namespace sql
 
 		// decide RA node to root the expression tree
 		template <std::size_t Pos>
-		static constexpr auto parse_root() noexcept
+		static constexpr auto parse_root()
 		{
 			static_assert(isselect(tokens_[Pos]), "Expected 'SELECT' token not found.");
 
@@ -1870,12 +1874,12 @@ namespace sql
 			expression::reset();
 		}
 
-		iterator begin() const
+		inline iterator begin() const
 		{
 			return iterator{ empty_ };
 		}
 
-		iterator end() const
+		inline iterator end() const
 		{
 			return iterator{ true };
 		}

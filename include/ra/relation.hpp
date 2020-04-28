@@ -30,7 +30,7 @@ namespace ra
 		}
 		
 		template <typename Input, typename... Inputs>
-		static void seed(Input const& r, Inputs const&... rs)
+		static void seed(Input const& r, Inputs const&... rs) noexcept
 		{
 			if constexpr (std::is_same_v<Input, Schema>)
 			{
@@ -44,7 +44,7 @@ namespace ra
 			}
 		}
 
-		static inline void reset()
+		static inline void reset() noexcept
 		{
 			curr = begin;
 		}

@@ -84,7 +84,7 @@ namespace sql
 		{
 			for (std::size_t i{}; i < col.size(); ++i)
 			{
-				emplace(std::forward<Type>(col[i]),std::forward<Types>(cols[i])...);
+				emplace(std::forward<Type>(col[i]), std::forward<Types>(cols[i])...);
 			}
 		}
 
@@ -112,12 +112,12 @@ namespace sql
 			}
 		}
 
-		inline const_iterator begin() const
+		inline const_iterator begin() const noexcept
 		{
 			return table_.begin();
 		}
 
-		inline const_iterator end() const
+		inline const_iterator end() const noexcept
 		{
 			return table_.end();
 		}

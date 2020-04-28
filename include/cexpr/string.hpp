@@ -13,10 +13,10 @@ namespace cexpr
 	public:
 		using char_type = Char;
 
-		constexpr string() : size_{ 0 }, string_{ 0 }
+		constexpr string() noexcept : size_{ 0 }, string_{ 0 }
 		{}
 
-		constexpr string(const Char(&s)[N]) : string{}
+		constexpr string(const Char(&s)[N]) noexcept : string{}
 		{
 			for(; s[size_]; ++size_)
 			{
@@ -24,7 +24,7 @@ namespace cexpr
 			}
 		}
 
-		constexpr string(cexpr::string<Char, N> const& s) : string{}
+		constexpr string(cexpr::string<Char, N> const& s) noexcept : string{}
 		{
 			for (; s[size_]; ++size_)
 			{
@@ -32,20 +32,23 @@ namespace cexpr
 			}
 		}
 
-		constexpr string(std::basic_string_view<Char> const& s) : string{}
+		constexpr string(std::basic_string_view<Char> const& s) noexcept : string{}
 		{
-			for (; size_ < s.length(); ++size_)
+			if (s.length() < N)
 			{
-				string_[size_] = s[size_];
+				for (; size_ < s.length(); ++size_)
+				{
+					string_[size_] = s[size_];
+				}
 			}
 		}
 
-		constexpr void fill(const Char* begin, const Char* end)
+		constexpr void fill(const Char* begin, const Char* end) noexcept
 		{
 			fill_from(begin, end, begin());
 		}
 
-		constexpr void fill_from(const Char* begin, const Char* end, Char* start)
+		constexpr void fill_from(const Char* begin, const Char* end, Char* start) noexcept
 		{
 			if (end - begin < N)
 			{
@@ -56,45 +59,45 @@ namespace cexpr
 			}
 		}
 
-		constexpr std::size_t capacity() const noexcept
+		inline constexpr std::size_t capacity() const noexcept
 		{ 
 			return N - 1;
 		}
 
-		constexpr std::size_t size() const noexcept
+		inline constexpr std::size_t size() const noexcept
 		{
 			return size_;
 		}
 
-		constexpr Char* begin() noexcept
+		inline constexpr Char* begin() noexcept
 		{
 			return string_;
 		}
-		constexpr const Char* cbegin() const noexcept
+		inline constexpr const Char* cbegin() const noexcept
 		{
 			return string_;
 		}
 
-		constexpr Char* end() noexcept
+		inline constexpr Char* end() noexcept
 		{
 			return &string_[size_];
 		}
-		constexpr const Char* cend() const noexcept
+		inline constexpr const Char* cend() const noexcept
 		{
 			return &string_[size_];
 		}
 
-		constexpr Char& operator[](std::size_t i) noexcept
+		inline constexpr Char& operator[](std::size_t i)
 		{
 			return string_[i];
 		}
-		constexpr Char const& operator[](std::size_t i) const noexcept
+		inline constexpr Char const& operator[](std::size_t i) const
 		{
 			return string_[i];
 		}
 
 		template <typename OtherChar, std::size_t OtherN>
-		constexpr bool operator==(string<OtherChar, OtherN> const& other) const
+		constexpr bool operator==(string<OtherChar, OtherN> const& other) const noexcept
 		{
 			if constexpr (N != OtherN)
 			{
@@ -108,7 +111,7 @@ namespace cexpr
 		}
 
 		template <typename OtherChar, std::size_t OtherN>
-		constexpr bool operator==(const OtherChar(&other)[OtherN]) const
+		constexpr bool operator==(const OtherChar(&other)[OtherN]) const noexcept
 		{
 			if constexpr (N != OtherN)
 			{
@@ -122,13 +125,13 @@ namespace cexpr
 		}
 
 		template <typename OtherChar>
-		bool operator==(std::basic_string<OtherChar> const& other) const
+		inline bool operator==(std::basic_string<OtherChar> const& other) const noexcept
 		{
 			return other == string_;
 		}
 
 		template <typename OtherChar>
-		bool operator!=(std::basic_string<OtherChar> const& other) const
+		inline bool operator!=(std::basic_string<OtherChar> const& other) const noexcept
 		{
 			return !(other == string_);
 		}
@@ -142,13 +145,13 @@ namespace cexpr
 	string(const Char[N]) -> string<Char, N>;
 
 	template <typename Char, std::size_t N>
-	bool operator==(std::basic_string<Char> const& str, string<Char, N> const& cstr)
+	inline bool operator==(std::basic_string<Char> const& str, string<Char, N> const& cstr) noexcept
 	{
 		return cstr == str;
 	}
 
 	template <typename Char, std::size_t N>
-	bool operator!=(std::basic_string<Char> const& str, string<Char, N> const& cstr)
+	inline bool operator!=(std::basic_string<Char> const& str, string<Char, N> const& cstr) noexcept
 	{
 		return cstr != str;
 	}

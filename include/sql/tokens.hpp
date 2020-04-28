@@ -66,6 +66,8 @@ namespace sql
 	public:
 		using token_view = std::basic_string_view<Char>;
 
+		constexpr tokens() = default;
+
 		template<std::size_t N>
 		constexpr tokens(cexpr::string<Char, N> const& cs) : tokens_{}
 		{
@@ -121,11 +123,11 @@ namespace sql
 			return tokens_.cend();
 		}
 
-		constexpr token_view& operator[](std::size_t i) noexcept
+		constexpr token_view& operator[](std::size_t i)
 		{
 			return tokens_[i];
 		}
-		constexpr token_view const& operator[](std::size_t i) const noexcept
+		constexpr token_view const& operator[](std::size_t i) const
 		{
 			return tokens_[i];
 		}
@@ -135,7 +137,7 @@ namespace sql
 	};
 
 	template<typename Char, std::size_t N>
-	constexpr std::size_t preprocess(cexpr::string<Char, N> const& cs)
+	constexpr std::size_t preprocess(cexpr::string<Char, N> const& cs) noexcept
 	{
 		auto begin{ cs.cbegin() };
 		const auto end{ cs.cend() };

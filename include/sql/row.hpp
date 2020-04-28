@@ -32,22 +32,22 @@ namespace sql
 		row(column::type&& val, ColTs&&... vals) : value_{ std::forward<column::type>(val) }, next_{ std::forward<ColTs>(vals)... }
 		{}
 
-		inline constexpr next const& tail() const
+		inline constexpr next const& tail() const noexcept
 		{
 			return next_;
 		}
 
-		inline constexpr next& tail()
+		inline constexpr next& tail() noexcept
 		{
 			return next_;
 		}
 
-		inline constexpr column::type const& head() const
+		inline constexpr column::type const& head() const noexcept
 		{
 			return value_;
 		}
 
-		inline constexpr column::type& head()
+		inline constexpr column::type& head() noexcept
 		{
 			return value_;
 		}
@@ -61,7 +61,7 @@ namespace sql
 	struct variadic_row
 	{
 	private:
-		static inline constexpr auto resolve()
+		static inline constexpr auto resolve() noexcept
 		{
 			if constexpr (sizeof...(Cols) != 0)
 			{
@@ -79,7 +79,7 @@ namespace sql
 
 	// user function to query row elements by column name
 	template <cexpr::string Name, typename Row>
-	constexpr auto const& get(Row const& r)
+	constexpr auto const& get(Row const& r) noexcept
 	{
 		static_assert(!std::is_same_v<Row, sql::void_row>, "Name does not match a column name.");
 
@@ -95,7 +95,7 @@ namespace sql
 
 	// compiler function used by structured binding declaration
 	template <std::size_t Pos, typename Row>
-	constexpr auto const& get(Row const& r)
+	constexpr auto const& get(Row const& r) noexcept
 	{
 		static_assert(Pos < Row::depth, "Position is larger than number of row columns.");
 

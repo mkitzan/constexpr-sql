@@ -15,14 +15,14 @@ namespace sql
 		template <typename Row>
 		struct comparator
 		{
-			bool operator()(Row const& left, Row const& right) const
+			bool operator()(Row const& left, Row const& right) const noexcept
 			{
 				return compare<Columns...>(left, right);
 			}
 		
 		private:
 			template <cexpr::string Col, cexpr::string... Cols>
-			bool compare(Row const& left, Row const& right) const
+			bool compare(Row const& left, Row const& right) const noexcept
 			{
 				auto const& l{ sql::get<Col>(left) };
 				auto const& r{ sql::get<Col>(right) };

@@ -10,8 +10,7 @@ namespace sql
 	namespace
 	{
 
-		// shim to allow all value types like double or float
-		//	to be used as non-type template parameters.
+		// shim to allow all value types like double or float to be used as non-type template parameters.
 		template <typename Type>
 		struct value
 		{
@@ -26,7 +25,7 @@ namespace sql
 	template <cexpr::string Op, typename Row, typename Left, typename Right=void>
 	struct operation
 	{
-		static constexpr bool eval(Row const& row)
+		static constexpr bool eval(Row const& row) noexcept
 		{
 			if constexpr (Op == "=")
 			{
@@ -70,7 +69,7 @@ namespace sql
 	template <cexpr::string Column, typename Row>
 	struct variable
 	{
-		static constexpr auto eval(Row const& row)
+		static constexpr auto eval(Row const& row) noexcept
 		{
 			return sql::get<Column>(row);
 		}
@@ -79,7 +78,7 @@ namespace sql
 	template <auto Const, typename Row>
 	struct constant
 	{
-		static constexpr auto eval(__attribute__((unused)) Row const& row)
+		static constexpr auto eval(__attribute__((unused)) Row const& row) noexcept
 		{
 			return Const.val;
 		}

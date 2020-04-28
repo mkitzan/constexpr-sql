@@ -63,7 +63,7 @@ namespace sql
 		}
 
 		template <typename Type, typename Char, std::size_t N>
-		constexpr value<Type> convert(cexpr::string<Char, N> const& str)
+		constexpr value<Type> convert(cexpr::string<Char, N> const& str) noexcept
 		{
 			auto curr{ str.cbegin() }, end{ str.cend() };
 			constexpr Char dot{ '.' }, zro{ '0' }, min{ '-' };
@@ -168,9 +168,9 @@ namespace sql
 			return (c >= '0' && c <= '9') || c == '-' || c == '.';
 		}
 
-		constexpr bool iscomp(std::string_view const& tv) noexcept
+		constexpr bool iscomp(char c) noexcept
 		{
-			return tv[0] == '=' || tv[0] == '!' || tv[0] == '<' || tv[0] == '>';
+			return c == '=' || c == '!' || c == '<' || c == '>';
 		}
 
 		constexpr bool iscolumn(std::string_view const& tv) noexcept
@@ -198,17 +198,17 @@ namespace sql
 			operator++();
 		}
 
-		bool operator==(query_iterator const& it) const
+		inline bool operator==(query_iterator const& it) const noexcept
 		{
 			return end_ == it.end_;
 		}
 
-		bool operator!=(query_iterator const& it) const
+		inline bool operator!=(query_iterator const& it) const noexcept
 		{
 			return !(*this == it);
 		}
 
-		row_type const& operator*() const
+		inline row_type const& operator*() const noexcept
 		{
 			return row_;
 		}
@@ -241,7 +241,7 @@ namespace sql
 	private:
 		// where predicate terminal parsing 
 		template <std::size_t Pos, typename Row>
-		static constexpr auto parse_terms() noexcept
+		static constexpr auto parse_terms()
 		{
 			if constexpr (tokens_[Pos] == "(")
 			{
@@ -285,9 +285,9 @@ namespace sql
 
 		// parses a single compare operation
 		template <typename Left, typename Row>
-		static constexpr auto recurse_comparison() noexcept
+		static constexpr auto recurse_comparison()
 		{
-			if constexpr (!iscomp(tokens_[Left::pos]))
+			if constexpr (!iscomp(tokens_[Left::pos][0]))
 			{
 				return Left{};
 			}
@@ -305,7 +305,7 @@ namespace sql
 
 		// descend further and attempt to parse a compare operation
 		template <std::size_t Pos, typename Row>
-		static constexpr auto parse_comparison() noexcept
+		static constexpr auto parse_comparison()
 		{
 			using left = decltype(parse_terms<Pos, Row>());
 			
@@ -314,7 +314,7 @@ namespace sql
 
 		// attempt to parse a negation operation then descend further
 		template <std::size_t Pos, typename Row>
-		static constexpr auto parse_negation() noexcept
+		static constexpr auto parse_negation()
 		{
 			if constexpr (isnot(tokens_[Pos]))
 			{
@@ -333,7 +333,7 @@ namespace sql
 
 		// recursively parse chained AND operations
 		template <typename Left, typename Row>
-		static constexpr auto recurse_and() noexcept
+		static constexpr auto recurse_and()
 		{
 			if constexpr (!isand(tokens_[Left::pos]))
 			{
@@ -352,7 +352,7 @@ namespace sql
 
 		// descend further then attempt to parse AND operations
 		template <std::size_t Pos, typename Row>
-		static constexpr auto parse_and() noexcept
+		static constexpr auto parse_and()
 		{
 			using left = decltype(parse_negation<Pos, Row>());
 			
@@ -361,7 +361,7 @@ namespace sql
 		
 		// recursively parse chained OR operations
 		template <typename Left, typename Row>
-		static constexpr auto recurse_or() noexcept
+		static constexpr auto recurse_or()
 		{
 			if constexpr (!isor(tokens_[Left::pos]))
 			{
@@ -380,7 +380,7 @@ namespace sql
 
 		// descend further then attempt to parse OR operations
 		template <std::size_t Pos, typename Row>
-		static constexpr auto parse_or() noexcept
+		static constexpr auto parse_or()
 		{
 			using left = decltype(parse_and<Pos, Row>());
 			
@@ -443,7 +443,7 @@ namespace sql
 
 		// parses join colinfo if a join is present else returns the single relation terminal
 		template <std::size_t Pos>
-		static constexpr auto parse_join() noexcept
+		static constexpr auto parse_join()
 		{
 			constexpr auto lnext{ parse_schema<Pos>() };
 
@@ -466,7 +466,7 @@ namespace sql
 
 		// starting point to parse everything after the from keyword
 		template <std::size_t Pos>
-		static constexpr auto parse_from() noexcept
+		static constexpr auto parse_from()
 		{
 			static_assert(isfrom(tokens_[Pos]), "Expected 'FROM' token not found.");
 
@@ -509,7 +509,7 @@ namespace sql
 
 		// wrapper to determine the type for the the column
 		template <std::size_t Pos>
-		static constexpr auto column_type() noexcept
+		static constexpr auto column_type()
 		{
 			constexpr cexpr::string<char, tokens_[Pos].length() + 1> name{ tokens_[Pos] };
 
@@ -518,7 +518,7 @@ namespace sql
 
 		// asserts token is column separator, and if comma returns one past the comma else start position
 		template <std::size_t Pos>
-		static constexpr std::size_t next_column() noexcept
+		static constexpr std::size_t next_column()
 		{
 			static_assert(isseparator(tokens_[Pos]), "Expected ',' or 'FROM' token following column.");
 
@@ -533,7 +533,7 @@ namespace sql
 		}
 
 		template <std::size_t Pos, bool Rename>
-		static constexpr auto parse_colinfo() noexcept
+		static constexpr auto parse_colinfo()
 		{
 			static_assert(iscolumn(tokens_[Pos]), "Invalid token starting column delcaration.");
 
@@ -563,7 +563,7 @@ namespace sql
 
 		// recursively parse all columns projected/renamed in the query
 		template <std::size_t Pos, bool Rename>
-		static constexpr auto recurse_columns() noexcept
+		static constexpr auto recurse_columns()
 		{
 			if constexpr (isfrom(tokens_[Pos]))
 			{
@@ -585,7 +585,7 @@ namespace sql
 
 		// wrapper to parse columns as a projection RA node
 		template <std::size_t Pos>
-		static constexpr auto parse_projection() noexcept
+		static constexpr auto parse_projection()
 		{
 			constexpr auto proj{ recurse_columns<Pos, false>() };
 			constexpr auto next{ parse_from<proj.pos>() };
@@ -598,7 +598,7 @@ namespace sql
 
 		// wrapper to parse columns as a rename RA node
 		template <std::size_t Pos>
-		static constexpr auto parse_rename() noexcept
+		static constexpr auto parse_rename()
 		{
 			constexpr auto next = parse_projection<Pos>();
 
@@ -610,7 +610,7 @@ namespace sql
 
 		// attempts to match column rename operation pattern on a column
 		template <std::size_t Pos>
-		static constexpr bool has_rename() noexcept
+		static constexpr bool has_rename()
 		{
 			if constexpr (isfrom(tokens_[Pos]) || isfrom(tokens_[Pos + 2]))
 			{
@@ -639,7 +639,7 @@ namespace sql
 
 		// decide RA node to root the expression tree
 		template <std::size_t Pos>
-		static constexpr auto parse_root() noexcept
+		static constexpr auto parse_root()
 		{
 			static_assert(isselect(tokens_[Pos]), "Expected 'SELECT' token not found.");
 
@@ -685,12 +685,12 @@ namespace sql
 			expression::reset();
 		}
 
-		iterator begin() const
+		inline iterator begin() const
 		{
 			return iterator{ empty_ };
 		}
 
-		iterator end() const
+		inline iterator end() const
 		{
 			return iterator{ true };
 		}
