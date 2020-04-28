@@ -520,7 +520,7 @@ namespace sql
 		template <std::size_t Pos>
 		static constexpr std::size_t next_column() noexcept
 		{
-			static_assert(isseparator(tokens_[Pos]), "Expected ',' or 'FROM' token following column declaration.");
+			static_assert(isseparator(tokens_[Pos]), "Expected ',' or 'FROM' token following column.");
 
 			if constexpr (iscomma(tokens_[Pos]))
 			{
@@ -608,7 +608,7 @@ namespace sql
 			return context<next.pos, node>{};
 		}
 
-		// attempts to match column rename operation pattern on a column declaration
+		// attempts to match column rename operation pattern on a column
 		template <std::size_t Pos>
 		static constexpr bool has_rename() noexcept
 		{
@@ -622,10 +622,18 @@ namespace sql
 			}
 			else
 			{
-				// earlier "isfrom(tokens_[Pos + 2])" will catch FROM token
-				static_assert(iscomma(tokens_[Pos + 1]), "Expected ',' or 'FROM' token following column declaration.");
+				constexpr bool comma{ iscomma(tokens_[Pos + 1]) };
 
-				return has_rename<Pos + 2>();
+				static_assert(comma || isfrom(tokens_[Pos + 1]), "Expected ',' or 'FROM' token following column.");
+
+				if constexpr (comma)
+				{
+					return has_rename<Pos + 2>();
+				}
+				else
+				{
+					return has_rename<Pos + 1>();
+				}
 			}
 		}
 
