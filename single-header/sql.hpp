@@ -468,7 +468,7 @@ namespace sql
 	{
 
 		template <typename Row>
-		void fill(std::fstream& fstr, Row& row, char delim)
+		void fill(std::fstream& fstr, Row& row, __attribute__((unused)) char delim)
 		{
 			if constexpr (!std::is_same_v<Row, sql::void_row>)
 			{
