@@ -542,7 +542,7 @@ namespace sql
 
 	// for compat with previous versions
 	template <typename Schema, char Delim>
-	Schema load(std::string const& file)
+	inline Schema load(std::string const& file)
 	{
 		return load<Schema>(file, Delim);
 	}
@@ -561,7 +561,7 @@ namespace sql
 
 	// for devs who want to use the previous format
 	template <typename Type, char Delim>
-	void store(Type const& data, std::string const& file)
+	inline void store(Type const& data, std::string const& file)
 	{
 		store<Type>(data, file, Delim);
 	}
