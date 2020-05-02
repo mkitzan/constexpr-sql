@@ -20,6 +20,7 @@ namespace sql
 	public:
 		using column = Col;
 		using next = Next;
+
 		static constexpr std::size_t depth{ 1 + next::depth };
 
 		row() = default;
